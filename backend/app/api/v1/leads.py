@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func
 from app.database import get_db
 from app.models.lead import Lead, LeadCategory
+from app.models.organization import Organization
 from app.models.message import Message
 from app.schemas.lead import LeadResponse, LeadListResponse, LeadCreate, LeadUpdate, LeadApproveOutreach
 from app.schemas.message import MessageResponse, DashboardResponse
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, get_current_organization, require_role
 from app.models.user import User
 from uuid import UUID
 
@@ -24,9 +25,14 @@ async def list_leads(
     search: str = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member", "viewer")),
 ):
-    query = select(Lead)
-    count_query = select(func.count(Lead.id))
+    # Base queries scoped to organization
+    base_filter = Lead.organization_id == org.id
+
+    query = select(Lead).where(base_filter)
+    count_query = select(func.count(Lead.id)).where(base_filter)
 
     if category:
         query = query.where(Lead.category_flag == category)
@@ -57,17 +63,17 @@ async def list_leads(
     total = total_result.scalar()
 
     hot_result = await db.execute(
-        select(func.count(Lead.id)).where(Lead.category_flag == LeadCategory.HOT)
+        select(func.count(Lead.id)).where(Lead.category_flag == LeadCategory.HOT, base_filter)
     )
     hot = hot_result.scalar()
 
     warm_result = await db.execute(
-        select(func.count(Lead.id)).where(Lead.category_flag == LeadCategory.WARM)
+        select(func.count(Lead.id)).where(Lead.category_flag == LeadCategory.WARM, base_filter)
     )
     warm = warm_result.scalar()
 
     cold_result = await db.execute(
-        select(func.count(Lead.id)).where(Lead.category_flag == LeadCategory.COLD)
+        select(func.count(Lead.id)).where(Lead.category_flag == LeadCategory.COLD, base_filter)
     )
     cold = cold_result.scalar()
 
@@ -87,8 +93,12 @@ async def get_lead(
     lead_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member", "viewer")),
 ):
-    result = await db.execute(select(Lead).where(Lead.id == lead_id))
+    result = await db.execute(
+        select(Lead).where(Lead.id == lead_id, Lead.organization_id == org.id)
+    )
     lead = result.scalar_one_or_none()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -100,8 +110,10 @@ async def create_lead(
     data: LeadCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member")),
 ):
-    lead = Lead(**data.model_dump())
+    lead = Lead(**data.model_dump(), organization_id=org.id)
     db.add(lead)
     await db.flush()
     await db.refresh(lead)
@@ -114,8 +126,12 @@ async def update_lead(
     data: LeadUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member")),
 ):
-    result = await db.execute(select(Lead).where(Lead.id == lead_id))
+    result = await db.execute(
+        select(Lead).where(Lead.id == lead_id, Lead.organization_id == org.id)
+    )
     lead = result.scalar_one_or_none()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -131,8 +147,12 @@ async def delete_lead(
     lead_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin")),
 ):
-    result = await db.execute(select(Lead).where(Lead.id == lead_id))
+    result = await db.execute(
+        select(Lead).where(Lead.id == lead_id, Lead.organization_id == org.id)
+    )
     lead = result.scalar_one_or_none()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -145,8 +165,12 @@ async def approve_outreach(
     data: LeadApproveOutreach,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member")),
 ):
-    result = await db.execute(select(Lead).where(Lead.id == lead_id))
+    result = await db.execute(
+        select(Lead).where(Lead.id == lead_id, Lead.organization_id == org.id)
+    )
     lead = result.scalar_one_or_none()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")

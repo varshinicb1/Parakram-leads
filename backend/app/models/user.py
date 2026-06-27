@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import String, Boolean, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.database import Base
 
@@ -16,3 +16,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(32), default="admin")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    # Multi-tenant relationships
+    organizations = relationship("UserOrganization", back_populates="user", lazy="selectin")
+    teams = relationship("UserTeam", back_populates="user", lazy="selectin")

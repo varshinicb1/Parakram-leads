@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_db
-from app.services.scraper import run_crawl, scrape_single_category, JUSTDIAL_CATEGORIES, BANGALORE_LOCATIONS
+from app.database import get_db, async_session_factory
+from app.models.organization import Organization
+from app.services.scraper import run_crawl, scrape_single_category, scrape_duckduckgo, JUSTDIAL_CATEGORIES, BANGALORE_LOCATIONS
+from app.utils.security import get_current_user, get_current_organization, require_role
 from pydantic import BaseModel
 import csv
 import io
 import asyncio
 from app.models.lead import Lead, LeadStatus, LeadCategory
+from app.models.user import User
 from sqlalchemy import select
 import re
 
@@ -44,6 +47,8 @@ def is_valid_phone(phone: str) -> bool:
     return len(cleaned) == 10 and cleaned[0] in '6789'
 
 
+scrape_status: dict = {"running": False, "progress": "", "done": False}
+
 @router.post("/run")
 async def start_crawl(
     background_tasks: BackgroundTasks,
@@ -51,26 +56,63 @@ async def start_crawl(
     locations: list[str] | None = None,
     pages: int = Query(default=2, le=5),
     use_maps: bool = True,
-    use_justdial: bool = True,
+    use_justdial: bool = False,
+    use_ddg: bool = True,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member")),
 ):
+    if scrape_status["running"]:
+        return ScraperResponse(status="busy", message="Scrape already in progress", stats={})
+
     if categories is None or len(categories) == 0:
         categories = JUSTDIAL_CATEGORIES[:5]
 
-    stats = await run_crawl(
-        categories=categories,
-        locations=locations,
-        max_pages=pages,
-        use_maps=use_maps,
-        use_justdial=use_justdial,
-        db=db,
-    )
+    scrape_status["running"] = True
+    scrape_status["done"] = False
+    scrape_status["progress"] = f"Starting: {len(categories)} categories, {len(locations or BANGALORE_LOCATIONS[:3])} locations"
 
-    return ScraperResponse(
-        status="ok",
-        message=f"Crawl complete: {stats['categories_done']} categories, {stats['total_leads']} leads found, {stats['saved']} saved",
-        stats=stats,
-    )
+    import asyncio
+
+    async def run_in_background():
+        def progress(msg: str):
+            scrape_status["progress"] = msg
+        try:
+            async with async_session_factory() as bg_db:
+                stats = await asyncio.wait_for(
+                    run_crawl(
+                        categories=categories,
+                        locations=locations,
+                        max_pages=pages,
+                        use_maps=use_maps,
+                        use_justdial=use_justdial,
+                        use_ddg=use_ddg,
+                        db=bg_db,
+                        progress_callback=progress,
+                        organization_id=org.id,
+                    ),
+                    timeout=1800,
+                )
+                await bg_db.commit()
+                scrape_status["stats"] = stats
+                scrape_status["progress"] = f"Done: {stats['categories_done']} cat, {stats['total_leads']} leads, {stats['saved']} saved"
+        except asyncio.TimeoutError:
+            scrape_status["progress"] = "Error: Timed out after 30 min"
+        except Exception as e:
+            scrape_status["progress"] = f"Error: {e}"
+        finally:
+            scrape_status["running"] = False
+            scrape_status["done"] = True
+
+    background_tasks.add_task(run_in_background)
+    return ScraperResponse(status="started", message=f"Crawl started: {len(categories)} categories", stats={})
+
+@router.get("/status")
+async def get_scrape_status():
+    return {"status": "running" if scrape_status["running"] else ("done" if scrape_status["done"] else "idle"),
+            "progress": scrape_status.get("progress", ""),
+            "stats": scrape_status.get("stats", {})}
 
 
 @router.post("/single/{category}")
@@ -79,8 +121,11 @@ async def scrape_category(
     location: str = Query(default="Bangalore"),
     pages: int = Query(default=2, le=5),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member")),
 ):
-    leads = await scrape_single_category(category, location, pages, db=db)
+    leads = await scrape_single_category(category, location, pages, db=db, organization_id=org.id)
     return ScraperResponse(
         status="ok",
         message=f"Scraped {len(leads)} leads without websites for {category} in {location}",
@@ -102,6 +147,9 @@ async def list_locations():
 async def import_csv(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member")),
 ):
     if not file.filename.endswith(".csv"):
         raise HTTPException(400, "Only CSV files accepted")
@@ -133,7 +181,9 @@ async def import_csv(
             skipped += 1
             continue
 
-        existing = await db.execute(select(Lead).where(Lead.phone == phone))
+        existing = await db.execute(
+            select(Lead).where(Lead.phone == phone, Lead.organization_id == org.id)
+        )
         if existing.scalar_one_or_none():
             errors.append(f"Row {row_num}: Phone '{phone}' already exists")
             skipped += 1
@@ -141,6 +191,7 @@ async def import_csv(
 
         try:
             lead = Lead(
+                organization_id=org.id,
                 business_name=business_name[:255],
                 phone=phone,
                 industry=industry[:128],
@@ -171,9 +222,15 @@ async def import_csv(
 
 
 @router.get("/export-csv")
-async def export_csv(db: AsyncSession = Depends(get_db)):
+async def export_csv(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member", "viewer")),
+):
     result = await db.execute(
-        select(Lead).where(Lead.source == "csv_import").order_by(Lead.created_at.desc()).limit(10000)
+        select(Lead).where(Lead.source == "csv_import", Lead.organization_id == org.id)
+        .order_by(Lead.created_at.desc()).limit(10000)
     )
     leads = result.scalars().all()
 

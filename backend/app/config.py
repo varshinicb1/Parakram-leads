@@ -47,6 +47,36 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
 
+    # Database pooling
+    DB_POOL_SIZE: int = int(os.getenv("DB_POOL_SIZE", "20"))
+    DB_MAX_OVERFLOW: int = int(os.getenv("DB_MAX_OVERFLOW", "10"))
+
+    # Logging
+    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+    LOG_FORMAT: str = os.getenv("LOG_FORMAT", "json")
+
+    # Prometheus
+    PROMETHEUS_ENABLED: bool = os.getenv("PROMETHEUS_ENABLED", "true").lower() == "true"
+
+    # Rate limiting
+    RATE_LIMIT_ENABLED: bool = os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
+    RATE_LIMIT_DEFAULT: int = int(os.getenv("RATE_LIMIT_DEFAULT", "100"))
+
+    # Proxy rotation
+    PROXY_LIST: str = os.getenv("PROXY_LIST", "")
+    PROXY_ROTATION_ENABLED: bool = os.getenv("PROXY_ROTATION_ENABLED", "false").lower() == "true"
+
+    # SendGrid
+    SENDGRID_API_KEY: str = os.getenv("SENDGRID_API_KEY", "")
+    EMAIL_TRACKING_BASE_URL: str = os.getenv("EMAIL_TRACKING_BASE_URL", "http://localhost:8000")
+
+    # LinkedIn
+    LINKEDIN_EMAIL: str = os.getenv("LINKEDIN_EMAIL", "")
+    LINKEDIN_PASSWORD: str = os.getenv("LINKEDIN_PASSWORD", "")
+
+    # GDPR
+    DATA_RETENTION_DAYS: int = int(os.getenv("DATA_RETENTION_DAYS", "730"))
+
     class Config:
         env_file = ".env"
 

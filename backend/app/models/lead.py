@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Text, Float, Integer, Boolean, DateTime, JSON, Enum as SAEnum
+from sqlalchemy import String, Text, Float, Integer, Boolean, DateTime, JSON, Enum as SAEnum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 from app.database import Base
@@ -28,6 +28,13 @@ class Lead(Base):
     __tablename__ = "leads"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False, index=True
+    )
+    team_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("teams.id", ondelete="SET NULL"), nullable=True
+    )
     business_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     owner_name: Mapped[str] = mapped_column(String(255), nullable=True)
     industry: Mapped[str] = mapped_column(String(128), nullable=True, index=True)
@@ -81,3 +88,9 @@ class Lead(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # GDPR & Data Retention
+    gdpr_consent: Mapped[bool] = mapped_column(Boolean, default=False)
+    gdpr_consent_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    soft_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    soft_deleted_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)

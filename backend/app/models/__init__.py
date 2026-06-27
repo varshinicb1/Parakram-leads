@@ -3,6 +3,10 @@ from app.models.user import User
 from app.models.message import Message, MessageChannel, MessageStatus
 from app.models.alert import Alert
 from app.models.audit import AuditLog
+from app.models.organization import (
+    Organization, Team, UserOrganization, UserTeam,
+    OrgRole, TeamRole, SubscriptionTier,
+)
 
 __all__ = [
     "Lead", "LeadCategory", "LeadStatus",
@@ -10,4 +14,6 @@ __all__ = [
     "Message", "MessageChannel", "MessageStatus",
     "Alert",
     "AuditLog",
+    "Organization", "Team", "UserOrganization", "UserTeam",
+    "OrgRole", "TeamRole", "SubscriptionTier",
 ]

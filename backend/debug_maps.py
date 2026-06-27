@@ -1,19 +1,37 @@
-import asyncio, sys, re
-sys.path.insert(0, "/app")
-from app.services.scraper import fetch_page
+import asyncio
+from playwright.async_api import async_playwright
 
-async def test():
-    html = await fetch_page("https://www.google.com/maps/search/Restaurants+in+Koramangala+Bangalore/")
-    # Find context around phone numbers
-    for m in re.finditer(r'[6-9]\d{9}', html):
-        start = max(0, m.start() - 200)
-        end = min(len(html), m.end() + 200)
-        ctx = html[start:end]
-        # Find a name-like string near this phone
-        names = re.findall(r'"([A-Z][A-Za-z0-9\s\.&\-]{3,60})"', ctx)
-        print(f"Phone: {m.group()}")
-        for n in names[:3]:
-            print(f"  Near name: {n}")
-        print()
+async def debug():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(
+            headless=True,
+            args=["--no-sandbox", "--disable-gpu"]
+        )
+        page = await browser.new_page(
+            viewport={"width": 1920, "height": 1080},
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+            locale="en-IN",
+        )
+        await page.goto("https://www.google.com/maps/search/Restaurants+in+Koramangala/", timeout=60000)
+        await asyncio.sleep(10)
 
-asyncio.run(test())
+        # Try query_selector_all matching scraper
+        listings = await page.query_selector_all('a[href*="maps/place/"]')
+        print(f"query_selector_all found: {len(listings)}")
+
+        # Try with content search
+        html = await page.content()
+        print(f"Page length: {len(html)} chars")
+        has_feed = "role=\"feed\"" in html
+        has_links = "maps/place/" in html
+        print(f"Has feed: {has_feed}")
+        print(f"Has maps/place links: {has_links}")
+
+        # Take screenshot
+        await page.screenshot(path="/tmp/debug_maps2.png", full_page=True)
+        print("Screenshot saved")
+
+        await browser.close()
+
+asyncio.run(debug())
+print("Done")

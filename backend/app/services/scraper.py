@@ -1,10 +1,11 @@
 import asyncio
+import random
 import re
 import json
 import os
 import csv
 from typing import Optional
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, unquote
 from bs4 import BeautifulSoup
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,55 +29,46 @@ JUSTDIAL_CATEGORIES = [
     "Lawyers", "Advocates", "Legal Consultants",
     "Property Agents", "Real Estate", "Property Consultants",
     "Builders", "Developers",
-    "Tutors", "Coaching Centers", "Preschools", "Schools",
-    "Computer Training", "Language Classes", "Dance Classes",
-    "Photographers", "Event Planners", "Wedding Planners",
-    "DJs", "Mandap Decorators", "Catering Services",
-    "Travel Agents", "Tour Operators", "Cab Services",
-    "Car Rentals", "Bus Rentals",
-    "Hardware Stores", "Electrical Shops", "Kirana Stores",
-    "Departmental Stores", "Furniture Shops", "Electronics Shops",
-    "Mobile Shops", "Computer Shops", "Book Shops",
-    "Clothing Stores", "Tailors", "Jewelry Stores",
-    "Car Mechanics", "Bike Mechanics", "Car Wash",
-    "Tyre Dealers", "Auto Parts",
+    "Photographers", "Event Planners", "DJs", "Wedding Planners",
+    "Tent Houses", "Caterers",
+    "Tutors", "Coaching Centers", "Computer Training",
+    "Dance Classes", "Music Classes",
+    "Pizza Outlets", "Juice Centers", "Ice Cream Parlours",
+    "Cafes", "Food Trucks",
+    "Chemists", "Opticians", "Fitness Centers",
+    "BPO", "IT Services", "Digital Marketing",
+    "Travel Agents", "Cab Services", "Car Rentals",
+    "Laundry", "Dry Cleaners", "Tailors",
+    "Boutiques", "Jewelers", "Watch Repairs",
+    "Furniture Stores", "Home Decor", "Kitchen Appliances",
+    "Hardware Stores", "Paint Stores", "Flooring Dealers",
+    "Tiles Dealers", "Bathroom Fittings",
+    "Automobile Repair", "Car Wash", "Bike Rentals",
+    "Tyre Dealers", "Auto Spares",
+    "Courier Services", "Cargo Services", "Logistics",
+    "Manpower Consultants", "Placement Agencies",
+    "Counsellors", "Psychologists", "Child Care",
+    "Old Age Homes", "Orphanages", "NGOs",
+    "Banks", "ATMs", "Finance Companies",
+    "Insurance Agents", "Stock Brokers", "Mutual Funds",
     "DTP Operators", "Printing Shops", "Xerox Centers",
-    "CCTV Dealers", "AC Repair", "Washing Machine Repair",
-    "Laptop Repair", "Mobile Repair", "TV Repair",
-    "Carpet Dealers", "Paint Dealers", "Tile Dealers",
-    "Borewells", "Water Purifiers", "Solar Panel Dealers",
-    "General Stores", "Provisions", "Bakeries",
-    "Sweet Shops", "Ice Cream Parlours", "Juice Centers",
-    "Chemists", "Opticians", "Health Clinics",
-    "Fitness Trainers", "Zumba Classes", "Crossfit",
-    "Beauty Clinics", "Laser Clinics", "Hair Transplant",
-    "Counsellors", "Psychologists", "Alternative Medicine",
-    "Day Care Centers", "Old Age Homes",
-    "Courier Services", "Logistics", "Transport Services",
-    "Gift Shops", "Florists", "Stationery Shops",
-    "Sports Equipment", "Toy Shops", "Pet Shops",
-    "Laundry", "Dry Cleaners", "Ironing Services",
-    "Locksmith", "Key Maker",
-    "Watch Repair", "Jewelry Repair", "Shoe Repair",
-    "Plant Nurseries", "Gardening Services", "Landscaping",
-    "CCTV Installation", "Home Automation", "Security Guards",
-    "Waste Management", "Scrap Dealers", "Recycling Centers",
-    "Tattoo Studios", "Piercing Studios", "Unisex Salons",
-    "Spa", "Massage Centers", "Wellness Centers",
-    "Dance Academies", "Music Classes", "Art Classes",
-    "Pottery Classes", "Cooking Classes",
-    "Yoga Teachers", "Meditation Centers", "Naturopathy",
-    "Rental Services", "Furniture Rental", "Car Rental",
-    "Bicycle Rental", "Scooter Rental", "Bike Rental",
-    "PG Accommodation", "Hostels", "Guest Houses",
-    "Lodges", "Budget Hotels", "Service Apartments",
+    "Stationery Shops", "Book Shops", "Libraries",
+    "Pet Shops", "Pet Grooming", "Dog Training",
+    "Swimming Pools", "Sports Clubs", "Badminton Courts",
+    "Golf Courses", "Tennis Courts",
+    "Pest Control", "Water Purifiers", "Solar Panels",
+    "Security Systems", "CCTV Dealers", "Fire Safety",
+    "Cable TV", "Internet Providers", "Broadband Services",
+    "Mobile Repairs", "Computer Repairs", "Laptop Repairs",
+    "AC Repair", "Refrigerator Repair", "Washing Machine Repair",
+    "Microwave Repair", "Water Heater Repair", "Chimney Repair",
 ]
 
 BANGALORE_LOCATIONS = [
     "Koramangala", "Indiranagar", "Whitefield", "Marathahalli",
-    "Jayanagar", "JP Nagar", "BTM Layout", "HSR Layout",
-    "Banashankari", "Basavanagudi", "Malleshwaram", "Rajajinagar",
-    "Vijayanagar", "RR Nagar", "Yelahanka", "Hebbal",
+    "HSR Layout", "BTM Layout", "Jayanagar", "JP Nagar",
+    "Malleshwaram", "Rajajinagar", "Basavanagudi", "Vijayanagar",
+    "Yelahanka", "Hebbal", "RT Nagar", "Banashankari",
     "Electronic City", "MG Road", "Brigade Road",
     "Sadashivanagar", "Ulsoor", "Domlur", "HAL",
     "Vasanth Nagar", "Yeshwanthpur", "Peenya",
@@ -107,7 +99,7 @@ def is_valid_phone(phone: str) -> bool:
 async def scrape_google_maps_browser(
     category: str,
     location: str = "Bangalore",
-    max_results: int = 50,
+    max_results: int = 30,
 ) -> list[dict]:
     from playwright.async_api import async_playwright
 
@@ -115,86 +107,113 @@ async def scrape_google_maps_browser(
     seen_phones: set = set()
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch_persistent_context(
-            user_data_dir=os.path.join(os.path.dirname(__file__), "..", "..", "playwright_data"),
+        browser = await p.chromium.launch(
             headless=True,
-            args=["--no-sandbox"],
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
-            viewport={"width": 1920, "height": 1080},
-            locale="en-IN",
+            args=["--no-sandbox", "--disable-gpu"],
         )
         page = await browser.new_page()
 
         query = quote_plus(f"{category} in {location}")
         url = f"https://www.google.com/maps/search/{query}/"
         print(f"  Opening Maps: {url}")
-        await page.goto(url, wait_until="domcontentloaded", timeout=45000)
-        await asyncio.sleep(3)
+        try:
+            await page.goto(url, timeout=45000)
+        except:
+            pass
+        await asyncio.sleep(8)
 
-        await page.evaluate("document.querySelector('[role=\"feed\"]')?.scrollBy(0, 3000)")
-        await asyncio.sleep(2)
-        await page.evaluate("document.querySelector('[role=\"feed\"]')?.scrollBy(0, 5000)")
-        await asyncio.sleep(2)
+        title = await page.title()
+        print(f"    Page title: {title}")
 
-        listings = await page.query_selector_all('a[href*="maps/place/"]')
-        if not listings:
-            listings = await page.query_selector_all('[role="article"]')
-        if not listings:
-            listings = await page.query_selector_all('[class*="Nv2PK"]')
-        print(f"    Found {len(listings)} listings")
+        locator = page.locator('a[href*="maps/place/"]')
+        total = await locator.count()
+        print(f"    Found {total} listing links")
 
-        for i, listing in enumerate(listings[:max_results]):
+        for i in range(min(total, max_results)):
             try:
-                await listing.click()
-                await asyncio.sleep(2)
-
-                # Extract name
-                name = ""
-                for sel in ["h1", '[class*="DUwDvf"]', '[class*="headline"]', "h2"]:
-                    el = await page.query_selector(sel)
-                    if el:
-                        name = (await el.inner_text()).strip()
-                        if name and len(name) > 2:
-                            break
-
-                # Extract phone
-                phone = ""
-                for sel in ['button[data-item-id*="phone"]', 'a[href^="tel:"]', '[class*="phone"]']:
-                    el = await page.query_selector(sel)
-                    if el:
-                        txt = (await el.inner_text()).strip()
-                        nums = re.findall(r"[\d\s\-\(\)\+]{10,}", txt)
-                        for n in nums:
-                            cleaned = normalize_phone(n)
-                            if is_valid_phone(cleaned):
-                                phone = cleaned
-                                break
-                        if phone:
-                            break
-
-                # Extract website
-                website = ""
-                for sel in ['a[data-item-id*="authority"]', 'a[href*="http"][aria-label*="website"]']:
-                    el = await page.query_selector(sel)
-                    if el:
-                        href = await el.get_attribute("href") or ""
-                        if href and "http" in href:
-                            website = href
-                            break
-
-                # Extract address
-                address = ""
-                for sel in ['button[data-item-id*="address"]', '[class*="address"]']:
-                    el = await page.query_selector(sel)
-                    if el:
-                        address = (await el.inner_text()).strip()[:200]
-                        if address:
-                            break
-
-                if not name or len(name) < 3:
+                link = locator.nth(i)
+                href = await asyncio.wait_for(link.get_attribute("href"), timeout=5) or ""
+                if not href:
                     continue
 
-                phone = normalize_phone(phone)
+                card_name = await asyncio.wait_for(link.evaluate("""el => {
+                    const c = el.closest('[class*="Nv2PK"], div[jsaction], div > div');
+                    const ne = c?.querySelector('[class*="fontHeadline"]') || c?.querySelector('h3');
+                    return ne ? ne.innerText.trim() : '';
+                }"""), timeout=5)
+
+                await asyncio.wait_for(link.click(force=True), timeout=15)
+                await asyncio.sleep(1.5)
+
+                try:
+                    await asyncio.wait_for(page.wait_for_load_state("networkidle"), timeout=8)
+                except:
+                    pass
+
+                name = ""
+                try:
+                    for sel in ['[class*="DUwDvf"]', "h1.DUwDvf", "h1"]:
+                        el = await page.query_selector(sel)
+                        if el:
+                            name = (await el.inner_text()).strip()
+                            skip = ["results", "sign in", "get the most", "updates from", "this area"]
+                            if name and len(name) > 2 and not any(s in name.lower() for s in skip):
+                                break
+                except:
+                    pass
+
+                if not name and card_name:
+                    name = card_name
+                if not name or len(name) < 3:
+                    print(f"    [{i+1}] Skipping (bad name)")
+                    await page.keyboard.press("Escape")
+                    await asyncio.sleep(0.3)
+                    continue
+
+                phone = ""
+                try:
+                    tel_links = await page.query_selector_all('a[href^="tel:"]')
+                    if tel_links:
+                        h = await tel_links[0].get_attribute("href") or ""
+                        phone = normalize_phone(h.replace("tel:", ""))
+                    if not phone:
+                        for sel in ['button[data-item-id*="phone"]', 'button[aria-label*="phone"]']:
+                            btn = await page.query_selector(sel)
+                            if btn:
+                                txt = (await btn.inner_text()).strip()
+                                for n in re.findall(r"[\d\s\-\(\)\+]{10,}", txt):
+                                    c = normalize_phone(n)
+                                    if is_valid_phone(c):
+                                        phone = c
+                                        break
+                                if phone:
+                                    break
+                except:
+                    pass
+
+                website = ""
+                try:
+                    auth = await page.query_selector('a[data-item-id*="authority"]')
+                    if auth:
+                        h = await auth.get_attribute("href") or ""
+                        if "http" in h:
+                            website = h
+                    if not website:
+                        for a in await page.query_selector_all("a"):
+                            h = await a.get_attribute("href") or ""
+                            if h.startswith("http") and "google.com" not in h and "maps" not in h:
+                                website = h
+                                break
+                except:
+                    pass
+
+                address = ""
+                try:
+                    addr_btn = await page.query_selector('button[data-item-id*="address"]')
+                    if addr_btn:
+                        address = (await addr_btn.inner_text()).strip()[:200]
+                except:
+                    pass
 
                 if phone and phone not in seen_phones and is_valid_phone(phone):
                     seen_phones.add(phone)
@@ -202,20 +221,33 @@ async def scrape_google_maps_browser(
                         "business_name": name[:255],
                         "phone": phone,
                         "website": website,
-                        "description": f"{category} in {location}",
                         "address": address,
                         "category": category,
+                        "description": f"{category} in {location}",
                         "source": "google_maps_playwright",
                         "location": location,
                         "has_website": bool(website),
                     })
-
-                if phone:
-                    print(f"    [{i+1}] {name[:40]} | Phone: {phone}")
+                    print(f"    [{i+1}] {name[:35]} | Phone: {phone}")
                 else:
-                    print(f"    [{i+1}] {name[:40]} | No phone")
+                    print(f"    [{i+1}] {name[:35]} | No phone")
 
+                await page.keyboard.press("Escape")
+                await asyncio.sleep(0.3)
+
+            except asyncio.TimeoutError:
+                print(f"    [{i+1}] Timeout")
+                try:
+                    await page.keyboard.press("Escape")
+                except:
+                    pass
+                continue
             except Exception as e:
+                print(f"    [{i+1}] Error: {e}")
+                try:
+                    await page.keyboard.press("Escape")
+                except:
+                    pass
                 continue
 
         await browser.close()
@@ -286,6 +318,63 @@ async def scrape_justdial_httpx(
     return results
 
 
+async def scrape_duckduckgo(
+    category: str,
+    location: str = "Bangalore",
+    max_results: int = 10,
+) -> list[dict]:
+    """API-based lead sourcing via DuckDuckGo search"""
+    try:
+        from duckduckgo_search import DDGS
+    except ImportError:
+        print("  DDGS not installed, skipping")
+        return []
+
+    results = []
+    seen_phones: set = set()
+    query = f"{category} in {location} Bangalore phone"
+    print(f"  Searching DDG: {query}")
+
+    await asyncio.sleep(random.uniform(3, 6))
+    try:
+        with DDGS() as ddgs:
+            for i, r in enumerate(ddgs.text(query, max_results=max_results)):
+                title = r.get("title", "")
+                href = r.get("href", "")
+                snippet = r.get("body", "")
+
+                if not title or len(title) < 3:
+                    continue
+
+                phones_title = re.findall(r"[6-9]\d{9}", title)
+                phones_snippet = re.findall(r"[6-9]\d{9}", snippet)
+                all_phones = phones_title + phones_snippet
+
+                for p in all_phones:
+                    cleaned = normalize_phone(p)
+                    if cleaned and is_valid_phone(cleaned) and cleaned not in seen_phones:
+                        seen_phones.add(cleaned)
+                        has_website = "http" in href and "justdial" not in href and "sulekha" not in href
+                        results.append({
+                            "business_name": title[:255],
+                            "phone": cleaned,
+                            "website": href if has_website else "",
+                            "description": snippet[:300],
+                            "address": location,
+                            "category": category,
+                            "source": "duckduckgo",
+                            "location": location,
+                            "has_website": has_website,
+                        })
+                        break
+
+            print(f"    DDG: {len(results)} leads")
+    except Exception as e:
+        print(f"    DDG Error: {e}")
+
+    return results
+
+
 async def verify_no_website(lead_data: dict) -> dict:
     if lead_data.get("website"):
         known_no_site = [
@@ -309,19 +398,20 @@ async def verify_no_website(lead_data: dict) -> dict:
     return lead_data
 
 
-async def save_leads_to_db(leads: list[dict], db: AsyncSession) -> int:
+async def save_leads_to_db(leads: list[dict], db: AsyncSession, organization_id: uuid.UUID) -> int:
     saved = 0
     for ld in leads:
         phone = ld.get("phone", "")
         if not phone:
             continue
         existing = await db.execute(
-            select(Lead).where(Lead.phone == phone)
+            select(Lead).where(Lead.phone == phone, Lead.organization_id == organization_id)
         )
         if existing.scalar_one_or_none():
             continue
         try:
             lead = Lead(
+                organization_id=organization_id,
                 business_name=ld.get("business_name", "Unknown")[:255],
                 phone=phone,
                 industry=ld.get("category", "General")[:128],
@@ -346,10 +436,13 @@ async def save_leads_to_db(leads: list[dict], db: AsyncSession) -> int:
 async def run_crawl(
     categories: list[str] | None = None,
     locations: list[str] | None = None,
-    max_results: int = 30,
-    use_playwright: bool = True,
+    max_pages: int = 2,
+    use_maps: bool = True,
     use_justdial: bool = True,
+    use_ddg: bool = True,
     db: AsyncSession | None = None,
+    progress_callback: callable = None,
+    organization_id: uuid.UUID | None = None,
 ) -> dict:
     if categories is None:
         categories = JUSTDIAL_CATEGORIES[:5]
@@ -361,18 +454,25 @@ async def run_crawl(
 
     for i, category in enumerate(categories):
         for location in locations:
-            print(f"\n[{i+1}/{len(categories)}] {category} in {location}")
+            msg = f"[{i+1}/{len(categories)}] {category} in {location}"
+            print(f"\n{msg}")
+            if progress_callback:
+                progress_callback(msg)
 
             batch = []
-            if use_playwright:
-                leads = await scrape_google_maps_browser(category, location, max_results)
+            if use_maps:
+                leads = await scrape_google_maps_browser(category, location, max_pages * 15)
                 batch.extend(leads)
                 print(f"  Maps: {len(leads)} leads")
 
             if use_justdial:
-                leads = await scrape_justdial_httpx(category, location)
+                leads = await scrape_justdial_httpx(category, location, max_pages)
                 batch.extend(leads)
                 print(f"  JD: {len(leads)} leads")
+
+            if use_ddg:
+                leads = await scrape_duckduckgo(category, location)
+                batch.extend(leads)
 
             seen = set()
             unique = []
@@ -384,8 +484,8 @@ async def run_crawl(
                     unique.append(ld)
 
             no_site = [ld for ld in unique if not ld.get("has_website", False)]
-            all_leads.extend(no_site)
-            print(f"  Without website: {len(no_site)}")
+            all_leads.extend(unique)  # Save ALL leads, not just no-website ones
+            print(f"  Total: {len(unique)}, no-website: {len(no_site)}")
 
         stats["categories_done"] = i + 1
 
@@ -393,7 +493,7 @@ async def run_crawl(
     stats["no_website"] = len([ld for ld in all_leads if not ld.get("has_website")])
 
     if db:
-        saved = await save_leads_to_db(all_leads, db)
+        saved = await save_leads_to_db(all_leads, db, organization_id=organization_id)
         stats["saved"] = saved
         print(f"\nSaved {saved} leads to database")
 
@@ -444,6 +544,7 @@ async def scrape_single_category(
     location: str = "Bangalore",
     max_results: int = 30,
     db: AsyncSession | None = None,
+    organization_id: uuid.UUID | None = None,
 ) -> list[dict]:
     all_leads = []
     maps_leads = await scrape_google_maps_browser(category, location, max_results)
@@ -459,7 +560,7 @@ async def scrape_single_category(
                 all_leads.append(ld)
 
     if db:
-        saved = await save_leads_to_db(all_leads, db)
+        saved = await save_leads_to_db(all_leads, db, organization_id=organization_id)
         print(f"  Saved {saved} to DB")
 
     return all_leads

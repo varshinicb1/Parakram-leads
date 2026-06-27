@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Text, Boolean, DateTime, Enum as SAEnum
+from sqlalchemy import String, Text, Boolean, DateTime, Enum as SAEnum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 from app.database import Base
@@ -27,6 +27,10 @@ class Message(Base):
     __tablename__ = "messages"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False, index=True
+    )
     lead_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
     channel: Mapped[str] = mapped_column(SAEnum(MessageChannel), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)

@@ -14,6 +14,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
+  const orgId = getOrgId();
+  if (orgId) {
+    headers['X-Organization-ID'] = orgId;
+  }
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers,
@@ -40,6 +44,21 @@ export function setToken(token: string) {
 
 export function clearToken() {
   localStorage.removeItem('sigma_token');
+}
+
+export function getOrgId(): string | null {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('sigma_org_id');
+  }
+  return null;
+}
+
+export function setOrgId(orgId: string) {
+  localStorage.setItem('sigma_org_id', orgId);
+}
+
+export function clearOrgId() {
+  localStorage.removeItem('sigma_org_id');
 }
 
 export const api = {
@@ -74,6 +93,38 @@ export const api = {
       const qs = leadId ? `?lead_id=${leadId}` : '';
       return request<any[]>(`/messages${qs}`, { token: getToken() || undefined });
     },
+    filter: (params?: Record<string, string>) => {
+      const query = params ? '?' + new URLSearchParams(params).toString() : '';
+      return request<any[]>(`/messages${query}`, { token: getToken() || undefined });
+    },
+  },
+  organizations: {
+    list: () =>
+      request<any[]>('/organizations', { token: getToken() || undefined }),
+    get: (orgId: string) =>
+      request<any>(`/organizations/${orgId}`, { token: getToken() || undefined }),
+    create: (data: { name: string; slug: string }) =>
+      request<any>('/organizations', { method: 'POST', body: data, token: getToken() || undefined }),
+    update: (orgId: string, data: any) =>
+      request<any>(`/organizations/${orgId}`, { method: 'PATCH', body: data, token: getToken() || undefined }),
+    getSettings: (orgId: string) =>
+      request<any>(`/organizations/${orgId}`, { token: getToken() || undefined }),
+    updateSettings: (orgId: string, data: any) =>
+      request<any>(`/organizations/${orgId}`, { method: 'PATCH', body: data, token: getToken() || undefined }),
+    switch: (orgId: string) =>
+      request<any>(`/organizations/switch/${orgId}`, { method: 'POST', token: getToken() || undefined }),
+    listMembers: (orgId: string) =>
+      request<any[]>(`/organizations/${orgId}/members`, { token: getToken() || undefined }),
+    inviteMember: (orgId: string, data: { email: string; role: string }) =>
+      request<any>(`/organizations/${orgId}/members`, { method: 'POST', body: data, token: getToken() || undefined }),
+    updateMemberRole: (orgId: string, userId: string, role: string) =>
+      request<any>(`/organizations/${orgId}/members/${userId}/role?role=${role}`, { method: 'PATCH', token: getToken() || undefined }),
+    removeMember: (orgId: string, userId: string) =>
+      request<void>(`/organizations/${orgId}/members/${userId}`, { method: 'DELETE', token: getToken() || undefined }),
+    listTeams: (orgId: string) =>
+      request<any[]>(`/organizations/${orgId}/teams`, { token: getToken() || undefined }),
+    createTeam: (orgId: string, data: { name: string; description?: string }) =>
+      request<any>(`/organizations/${orgId}/teams`, { method: 'POST', body: data, token: getToken() || undefined }),
   },
   dashboard: {
     get: () =>

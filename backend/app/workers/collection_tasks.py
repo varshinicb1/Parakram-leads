@@ -31,7 +31,7 @@ def analyze_lead_task(self, lead_id: str):
             lead.opportunity_score = opp_score
 
             analysis = await analyze_lead(lead)
-            lead.ai_analysis = analysis.get("analysis", "")
+            lead.ai_analysis = analysis
             lead.suggested_solution = analysis.get("suggested_solution", "")
             lead.estimated_project_value = analysis.get("estimated_project_value", 0)
             lead.estimated_needs = analysis.get("estimated_needs", [])
