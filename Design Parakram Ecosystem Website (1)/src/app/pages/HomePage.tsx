@@ -153,7 +153,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
           >
             <motion.img
               src="/parakram_logo.png" alt="Parakram"
-              className="w-36 h-36 md:w-44 md:h-44 object-contain"
+              className="w-48 h-48 md:w-64 md:h-64 object-contain"
               style={{
                 x: useSpring(useMotionValue(0), { stiffness: 15, damping: 20 }),
                 y: useSpring(useMotionValue(0), { stiffness: 15, damping: 20 }),
@@ -192,43 +192,16 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
           >
             Custom websites · Cross-platform apps · AI workflows · IoT solutions · Research tools — tell us, we will build it.
           </motion.p>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.65 }}
-            className="text-[11px] font-mono text-[#c9a96e]/50 mb-8"
-          >
-            <span className="text-[#22c55e]">Parakram Leads is LIVE.</span> Try it at{" "}
-            <a href="https://leads.getparakram.in" target="_blank" rel="noopener noreferrer" className="hover:text-[#c9a96e] transition-colors underline">leads.getparakram.in</a>
-          </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.6, delay: 0.65, ease: [0.25, 0.1, 0.25, 1] }}
             className="flex items-center gap-3 flex-wrap justify-center"
           >
             <GoldButton onClick={() => go("services")} className="px-7 py-[13px] text-[13px]">View Services <ArrowRight size={13} /></GoldButton>
             <motion.button onClick={() => go("work")} className="flex items-center gap-2 px-7 py-[13px] text-[13px] border border-[#c9a96e]/25 text-[#c9a96e] hover:border-[#c9a96e]/50 hover:bg-[#c9a96e]/[0.04] transition-all tracking-[0.04em]" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>See Our Work <ArrowRight size={13} /></motion.button>
           </motion.div>
         </div>
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-        >
-          <motion.div
-            className="w-5 h-8 border-2 border-[#c9a96e]/30 rounded-full flex justify-center"
-            animate={{ opacity: [0.3, 0.8, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <motion.div
-              className="w-1 h-2 rounded-full bg-[#c9a96e] mt-2"
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </motion.div>
-        </motion.div>
       </section>
 
       {/* Services preview */}
@@ -314,7 +287,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
         <section className="max-w-7xl mx-auto px-6 py-24">
           <SectionLabel>Parakram Products</SectionLabel>
           <h2 className="text-[28px] md:text-[38px] font-semibold text-[#e8e6e3] tracking-[-0.02em] mb-4" style={{ fontFamily: "Sora, sans-serif" }}>Our own software, now shipping.</h2>
-          <p className="text-[14px] text-[#5a5a5a] mb-10 max-w-xl leading-relaxed">Beyond client work, we build independent products. <span className="text-[#22c55e]">Parakram Leads is LIVE.</span> Try it now.</p>
+          <p className="text-[14px] text-[#5a5a5a] mb-10 max-w-xl leading-relaxed">Beyond client work, we build independent products. <a href="https://leads.getparakram.in" target="_blank" rel="noopener noreferrer" className="text-[#c9a96e] hover:underline">Try Parakram Leads</a> — our AI-powered lead intelligence platform.</p>
           <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" staggerDelay={0.08}>
             {[
               { name: "Parakram Edge", tag: "Mobile Computing", desc: "Turn your Android phone into a high-performance edge server with a secure REST API for desktop AI agents and IoT orchestration.", pct: 72, icon: Cpu, live: false },
@@ -325,8 +298,8 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
                 <Panel className="p-6" onClick={() => go("products")}>
                   <div className="flex items-center gap-3 mb-4"><Icon size={16} className="text-[#c9a96e]" /><div><p className="text-[9px] font-mono text-[#c9a96e]/50 uppercase tracking-[0.15em]">{tag}</p><h3 className="text-[14px] font-semibold text-[#e8e6e3]" style={{ fontFamily: "Sora, sans-serif" }}>{name}</h3></div></div>
                   <p className="text-[12px] text-[#5a5a5a] leading-relaxed mb-5">{desc}</p>
-                  <div className="h-[3px] bg-white/[0.04]"><motion.div className="h-full" initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }} style={{ background: pct >= 100 ? "linear-gradient(90deg,#22c55e,#16a34a)" : "linear-gradient(90deg,#7a5020,#c9a96e)" }} /></div>
-                  <p className="text-[10px] font-mono mt-2" style={{ color: live ? "#22c55e" : "#2a2a2a" }}>{live ? "LIVE — v0.2.1" : `BUILDING: ${pct}%`}</p>
+                  <div className="h-[3px] bg-white/[0.04]"><motion.div className="h-full" initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }} style={{ background: pct >= 100 ? "linear-gradient(90deg,#c9a96e,#a88740)" : "linear-gradient(90deg,#7a5020,#c9a96e)" }} /></div>
+                  <p className="text-[10px] font-mono mt-2 text-[#3a3a3a]">{pct}% complete</p>
                 </Panel>
               </StaggerItem>
             ))}
