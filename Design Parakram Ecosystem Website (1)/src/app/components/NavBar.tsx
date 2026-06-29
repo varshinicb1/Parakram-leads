@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { motion } from "motion/react";
 import { Menu, X } from "lucide-react";
+import GoldButton from "./GoldButton";
 
 import type { Page } from "../types";
 
@@ -36,9 +36,9 @@ export function NavBar({ current, setPage }: { current: Page; setPage: (p: Page)
           </button>
         </div>
         <div className="hidden md:flex items-center gap-3">
-          <motion.button onClick={() => go("contact")} className="text-[12px] px-5 py-2.5 font-semibold tracking-[0.08em]" style={{ background: "linear-gradient(135deg,#b8903a,#d4b060,#f5e4a8,#c9a96e)", color: "#1a0f00" }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+          <GoldButton onClick={() => go("contact")} className="text-[12px] px-5 py-2.5 tracking-[0.08em]">
             TRUST US
-          </motion.button>
+          </GoldButton>
         </div>
         <button onClick={() => setOpen(v => !v)} className="md:hidden text-[#6a6a6a] hover:text-[#e8e6e3]">{open ? <X size={18} /> : <Menu size={18} />}</button>
       </div>

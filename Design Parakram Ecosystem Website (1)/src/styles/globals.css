@@ -9,6 +9,14 @@
   100% { background-position: 200% center; }
 }
 
+@keyframes gold-shimmer {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+  100% { background-position: 0% 50%; }
+}
+
 @keyframes particle {
   0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
   20% { opacity: 0.6; }
@@ -34,7 +42,29 @@
   50% { opacity: 0.8; }
 }
 
+@keyframes gold-sparkle {
+  0% { transform: scale(0) rotate(0deg); opacity: 1; }
+  50% { transform: scale(1.5) rotate(180deg); opacity: 0.6; }
+  100% { transform: scale(0) rotate(360deg); opacity: 0; }
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0) scale(1); opacity: 0.8; }
+  100% { transform: translateY(-120px) scale(0); opacity: 0; }
+}
+
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-shimmer { background-size: 200% auto; animation: shimmer 3s linear infinite; }
 .animate-grain { animation: grain 0.5s steps(4) infinite; }
 .animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+.animate-gold-shimmer { background-size: 400% 400%; animation: gold-shimmer 4s ease infinite; }
+.animate-gold-sparkle { animation: gold-sparkle 0.8s ease-out forwards; }
+.animate-float-up { animation: float-up 1s ease-out forwards; }
+
+@supports (animation-timeline: scroll()) {
+  .animate-scroll-progress { animation: scroll-progress linear forwards; animation-timeline: scroll(root); }
+}
+@keyframes scroll-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}

@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import SectionLabel from "../components/SectionLabel";
 import Panel from "../components/Panel";
 import Scanlines from "../components/Scanlines";
+import GoldButton from "../components/GoldButton";
 import { Check, MessageCircle, Mail, Linkedin, Github } from "lucide-react";
 
 function ContactPage() {
@@ -45,7 +46,7 @@ function ContactPage() {
                 <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#3a3a3a] uppercase block mb-2">Project Type</label><select value={form.project} onChange={e => setForm({ ...form, project: e.target.value })} className="w-full bg-[#0f0f0f] border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] focus:border-[#c9a96e]/40 outline-none transition-colors">{["Custom Website", "Portfolio Site", "Mobile App", "AI Workflow / Agent", "IoT Solution", "Research Tool", "ERP / Billing / POS", "Attendance System", "Real Estate App", "Parakram Edge", "Parakram Leads", "Parakram Research", "Other"].map(s => <option key={s}>{s}</option>)}</select></div>
                 <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#3a3a3a] uppercase block mb-2">Tell us about your project</label><textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} rows={6} required placeholder="Describe what you want to build, the problem it solves, and any specific integrations or features you need..." className="w-full bg-transparent border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] placeholder-[#2a2a2a] focus:border-[#c9a96e]/40 outline-none transition-colors resize-none" /></div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <motion.button type="submit" className="px-8 py-[13px] text-[13px] font-semibold text-[#1a0f00] tracking-[0.04em]" style={{ background: "linear-gradient(135deg,#b8903a,#d4b060,#f5e4a8,#c9a96e)" }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>Send Message</motion.button>
+                  <GoldButton type="submit" className="px-8 py-[13px] text-[13px]">Send Message</GoldButton>
                   <a href="https://wa.me/917259426670" target="_blank" rel="noopener noreferrer"><motion.button type="button" className="flex items-center gap-2 px-6 py-[13px] text-[13px] font-mono border border-[#25D366]/30 text-[#25D366] hover:border-[#25D366]/60 hover:bg-[#25D366]/[0.04] transition-all" whileHover={{ scale: 1.02 }}><MessageCircle size={14} /> WhatsApp Instead</motion.button></a>
                 </div>
               </form>

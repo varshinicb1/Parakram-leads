@@ -4,6 +4,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { motion } from "motion/react";
 import Panel from "./Panel";
 import Scanlines from "./Scanlines";
+import { playJumpSfx, playCoinSfx, playStompSfx, playDeathSfx } from "../hooks/useAudio";
 
 const W = 400, H = 300;
 const GRAVITY = 0.5;
@@ -172,6 +173,7 @@ function MarioGame() {
     if (keys.has("ArrowLeft") || keys.has("a")) player.vx = -MOVE_SPEED;
     if (keys.has("ArrowRight") || keys.has("d")) player.vx = MOVE_SPEED;
     if ((keys.has("ArrowUp") || keys.has("w") || keys.has(" ")) && player.onGround) {
+      playJumpSfx();
       player.vy = JUMP_FORCE;
       player.onGround = false;
     }
@@ -204,6 +206,7 @@ function MarioGame() {
       if (e.x <= 0 || e.x + e.w >= W) e.vx *= -1;
       if (rectCollide(player, e)) {
         if (player.vy > 0 && player.y + player.h - player.vy <= e.y + 8) {
+          playStompSfx();
           e.alive = false;
           player.vy = JUMP_FORCE / 1.5;
           state.combo++;
@@ -213,7 +216,7 @@ function MarioGame() {
           setComboText(state.combo >= 3 ? `COMBO x${state.combo}! +${bonus}` : `+${bonus}`);
           setTimeout(() => setComboText(""), 800);
         } else {
-          state.player.alive = false;
+          playDeathSfx();
           setPhase("dead");
           cancelAnimationFrame(animRef.current);
           const hs = parseInt(localStorage.getItem("mario_high") || "0");
@@ -230,6 +233,7 @@ function MarioGame() {
     coins.forEach(c => {
       if (c.collected) return;
       if (rectCollide(player, c)) {
+        playCoinSfx();
         c.collected = true;
         state.combo++;
         if (state.combo > state.maxCombo) state.maxCombo = state.combo;
@@ -246,6 +250,7 @@ function MarioGame() {
     for (let i = particles.length - 1; i >= 0; i--) { if (particles[i].life <= 0) particles.splice(i, 1); }
 
     if (player.y > H + 50) {
+      playDeathSfx();
       setPhase("dead");
       cancelAnimationFrame(animRef.current);
       const finalScore = score;

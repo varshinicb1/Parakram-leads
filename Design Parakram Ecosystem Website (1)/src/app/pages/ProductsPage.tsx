@@ -3,6 +3,7 @@
 import SectionLabel from "../components/SectionLabel";
 import Panel from "../components/Panel";
 import Scanlines from "../components/Scanlines";
+import GoldButton from "../components/GoldButton";
 import { type Page } from "../types";
 import { Cpu, BarChart3, Microscope, Check, MessageCircle, ArrowRight } from "lucide-react";
 
@@ -110,7 +111,7 @@ function ProductsPage({ setPage }: { setPage: (p: Page) => void }) {
               <p className="text-[12px] font-mono text-[#c9a96e]/50 mb-4">Free tier available. Upgrade for more leads and channels.</p>
               <div className="flex items-center gap-3 flex-wrap">
                 <a href="https://leads.getparakram.in" target="_blank" rel="noopener noreferrer">
-                  <button className="flex items-center gap-2 px-6 py-2.5 text-[12px] font-semibold tracking-[0.04em]" style={{ background: "linear-gradient(135deg,#b8903a,#d4b060,#f5e4a8,#c9a96e)", color: "#1a0f00" }}><BarChart3 size={13} /> Launch App</button>
+                  <GoldButton className="px-6 py-2.5 text-[12px]"><BarChart3 size={13} /> Launch App</GoldButton>
                 </a>
                 <a href="https://wa.me/917259426670" target="_blank" rel="noopener noreferrer">
                   <button className="flex items-center gap-2 px-6 py-2.5 text-[12px] font-mono text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/[0.05] transition-colors"><MessageCircle size={13} /> WhatsApp Us</button>

@@ -13,6 +13,7 @@ import {
   Globe, Star, Smartphone, Bot, Cpu, Microscope,
   BarChart3, MessageCircle, Github, Linkedin,
 } from "lucide-react";
+import GoldButton from "../components/GoldButton";
 import varshiniImg from "../../imports/varshini.png";
 import { type Page } from "../types";
 
@@ -206,7 +207,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
             transition={{ duration: 0.6, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
             className="flex items-center gap-3 flex-wrap justify-center"
           >
-            <motion.button onClick={() => go("services")} className="flex items-center gap-2 px-7 py-[13px] text-[13px] font-semibold tracking-[0.04em]" style={{ background: "linear-gradient(135deg,#b8903a,#d4b060,#f5e4a8,#c9a96e)", color: "#1a0f00" }} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>View Services <ArrowRight size={13} /></motion.button>
+            <GoldButton onClick={() => go("services")} className="px-7 py-[13px] text-[13px]">View Services <ArrowRight size={13} /></GoldButton>
             <motion.button onClick={() => go("work")} className="flex items-center gap-2 px-7 py-[13px] text-[13px] border border-[#c9a96e]/25 text-[#c9a96e] hover:border-[#c9a96e]/50 hover:bg-[#c9a96e]/[0.04] transition-all tracking-[0.04em]" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>See Our Work <ArrowRight size={13} /></motion.button>
           </motion.div>
         </div>
@@ -405,7 +406,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
               <h2 className="text-[34px] md:text-[50px] font-semibold text-[#e8e6e3] tracking-[-0.025em] mb-5 leading-tight" style={{ fontFamily: "Sora, sans-serif" }}>Have a project in mind?</h2>
               <p className="text-[14px] text-[#5a5a5a] mb-10 max-w-md mx-auto leading-relaxed">Tell us what you want to build. We will figure out the rest together — from concept to shipped product.</p>
               <div className="flex items-center gap-3 justify-center flex-wrap">
-                <motion.button onClick={() => go("contact")} className="px-8 py-[13px] text-[13px] font-semibold text-[#1a0f00] tracking-[0.04em]" style={{ background: "linear-gradient(135deg,#b8903a,#d4b060,#f5e4a8,#c9a96e)" }} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>Start a Conversation</motion.button>
+                <GoldButton onClick={() => go("contact")} className="px-8 py-[13px] text-[13px]">Start a Conversation</GoldButton>
                 <a href="https://wa.me/917259426670" target="_blank" rel="noopener noreferrer">
                   <motion.button className="flex items-center gap-2 px-8 py-[13px] text-[13px] border border-[#25D366]/30 text-[#25D366] hover:border-[#25D366]/60 hover:bg-[#25D366]/[0.04] transition-all" whileHover={{ scale: 1.04 }}><MessageCircle size={14} /> Chat on WhatsApp</motion.button>
                 </a>
