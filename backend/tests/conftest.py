@@ -17,6 +17,11 @@ TEST_DATABASE_URL = os.getenv(
     "postgresql+asyncpg://sigma:sigma@postgres:5432/sigma_leads_test",
 )
 
+pytest_asyncio.configure_loop_policy = lambda: asyncio.get_event_loop_policy()
+
+def pytest_configure(config):
+    config.option.asyncio_mode = "auto"
+
 
 @pytest.fixture(scope="session")
 def event_loop():

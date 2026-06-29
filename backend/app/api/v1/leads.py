@@ -12,6 +12,8 @@ from app.models.user import User
 from uuid import UUID
 from typing import Optional
 from pydantic import BaseModel
+from datetime import datetime
+from app.services.version_history_service import VersionHistoryService
 
 router = APIRouter(prefix="/leads", tags=["leads"])
 
@@ -31,12 +33,16 @@ async def list_leads(
     max_quality: float = None,
     min_opportunity: float = None,
     max_opportunity: float = None,
+    project_id: UUID = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
     org: Organization = Depends(get_current_organization),
     _: None = Depends(require_role("admin", "member", "viewer")),
 ):
     base_filter = [Lead.organization_id == org.id]
+
+    if project_id:
+        base_filter.append(Lead.project_id == project_id)
 
     if category:
         base_filter.append(Lead.category_flag == category)
@@ -139,6 +145,13 @@ async def create_lead(
     db.add(lead)
     await db.flush()
     await db.refresh(lead)
+    # Create version for creation
+    await VersionHistoryService.create_lead_version(
+        db=db,
+        lead=lead,
+        change_description="Lead created",
+        changed_by=current_user.id,
+    )
     return LeadResponse.model_validate(lead)
 
 
@@ -160,6 +173,13 @@ async def update_lead(
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(lead, key, value)
     await db.flush()
+    # Create version for update
+    await VersionHistoryService.create_lead_version(
+        db=db,
+        lead=lead,
+        change_description="Lead updated",
+        changed_by=current_user.id,
+    )
     await db.refresh(lead)
     return LeadResponse.model_validate(lead)
 
@@ -178,6 +198,13 @@ async def delete_lead(
     lead = result.scalar_one_or_none()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
+    # Create version for deletion
+    await VersionHistoryService.create_lead_version(
+        db=db,
+        lead=lead,
+        change_description="Lead deleted",
+        changed_by=current_user.id,
+    )
     await db.delete(lead)
 
 
@@ -204,8 +231,81 @@ async def approve_outreach(
         lead.outreach_message_linkedin = data.linkedin_message
     lead.outreach_approved = True
     await db.flush()
+    # Create version for outreach approval
+    await VersionHistoryService.create_lead_version(
+        db=db,
+        lead=lead,
+        change_description="Outreach approved",
+        changed_by=current_user.id,
+    )
     await db.refresh(lead)
     return LeadResponse.model_validate(lead)
+
+
+class LeadVersionResponse(BaseModel):
+    id: UUID
+    lead_id: UUID
+    version_number: int
+    changed_at: datetime
+    changed_by: Optional[UUID]
+    snapshot: dict
+    change_description: Optional[str]
+
+
+@router.get("/leads/{lead_id}/versions", response_model=list[LeadVersionResponse])
+async def get_lead_versions(
+    lead_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member", "viewer")),
+):
+    # Ensure lead belongs to org
+    result = await db.execute(select(Lead).where(Lead.id == lead_id, Lead.organization_id == org.id))
+    lead = result.scalar_one_or_none()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    versions = await VersionHistoryService.get_lead_versions(db, int(lead_id))
+    # Convert to response models
+    return [
+        LeadVersionResponse(
+            id=v.id,
+            lead_id=v.lead_id,
+            version_number=v.version_number,
+            changed_at=v.changed_at,
+            changed_by=v.changed_by,
+            snapshot=v.snapshot,
+            change_description=v.change_description,
+        )
+        for v in versions
+    ]
+
+
+@router.get("/versions/{version_id}", response_model=LeadVersionResponse)
+async def get_version(
+    version_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    org: Organization = Depends(get_current_organization),
+    _: None = Depends(require_role("admin", "member", "viewer")),
+):
+    result = await db.execute(
+        select(LeadVersion)
+        .join(Lead, LeadVersion.lead_id == Lead.id)
+        .where(LeadVersion.id == version_id, Lead.organization_id == org.id)
+    )
+    version = result.scalar_one_or_none()
+    if not version:
+        raise HTTPException(status_code=404, detail="Version not found or access denied")
+    return LeadVersionResponse(
+        id=version.id,
+        lead_id=version.lead_id,
+        version_number=version.version_number,
+        changed_at=version.changed_at,
+        changed_by=version.changed_by,
+        snapshot=version.snapshot,
+        change_description=version.change_description,
+    )
 
 
 class BulkActionRequest(BaseModel):
@@ -235,14 +335,34 @@ async def bulk_lead_action(
         if data.action == "approve":
             lead.outreach_approved = True
             lead.status = LeadStatus.APPROVED
+            await VersionHistoryService.create_lead_version(
+                db=db,
+                lead=lead,
+                change_description="Lead approved via bulk action",
+                changed_by=current_user.id,
+            )
             updated += 1
         elif data.action == "disqualify":
             lead.status = LeadStatus.DISQUALIFIED
             lead.category_flag = LeadCategory.COLD
+            await VersionHistoryService.create_lead_version(
+                db=db,
+                lead=lead,
+                change_description="Lead disqualified via bulk action",
+                changed_by=current_user.id,
+            )
             updated += 1
         elif data.action == "reanalyze":
             from app.workers.intelligence_tasks import run_full_intelligence_task
-            run_full_intelligence_task.delay(str(lead.id))
+            from app.services.job_engine import JobEngine
+            await JobEngine.start(
+                db=db,
+                task_func=run_full_intelligence_task,
+                name=f"Reanalyze: {lead.business_name}",
+                org_id=org.id,
+                lead_id=lead.id,
+                args=(str(lead.id),),
+            )
             updated += 1
 
     if updated > 0:

@@ -35,6 +35,9 @@ class Product(Base):
         UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"),
         nullable=False, index=True
     )
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
     tagline: Mapped[str] = mapped_column(String(255), nullable=True)

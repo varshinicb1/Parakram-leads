@@ -22,8 +22,7 @@ class ProductCategoryResponse(BaseModel):
     product_count: int = 0
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class ProductTierCreate(BaseModel):
@@ -46,8 +45,7 @@ class ProductTierResponse(BaseModel):
     sort_order: int
     is_featured: bool
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class ProductScreenshotCreate(BaseModel):
@@ -69,11 +67,11 @@ class ProductScreenshotResponse(BaseModel):
     mockup_frame: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class ProductCreate(BaseModel):
+    project_id: Optional[UUID] = None
     name: str = Field(..., min_length=1, max_length=255)
     slug: str = Field(..., min_length=1, max_length=255, pattern=r"^[a-z0-9-]+$")
     tagline: Optional[str] = None
@@ -108,6 +106,7 @@ class ProductUpdate(BaseModel):
 
 class ProductListResponse(BaseModel):
     id: UUID
+    project_id: Optional[UUID] = None
     name: str
     slug: str
     tagline: Optional[str] = None
@@ -122,12 +121,12 @@ class ProductListResponse(BaseModel):
     tier_count: int = 0
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class ProductDetailResponse(BaseModel):
     id: UUID
+    project_id: Optional[UUID] = None
     name: str
     slug: str
     tagline: Optional[str] = None
@@ -147,8 +146,7 @@ class ProductDetailResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class StoreDashboardResponse(BaseModel):
@@ -159,3 +157,5 @@ class StoreDashboardResponse(BaseModel):
     total_screenshots: int
     featured_products: int
     recent_products: list[ProductListResponse] = []
+
+    model_config = {"from_attributes": True}

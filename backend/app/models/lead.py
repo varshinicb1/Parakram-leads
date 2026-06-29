@@ -1,10 +1,11 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Text, Float, Integer, Boolean, DateTime, JSON, Enum as SAEnum, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import String, Text, Float, Integer, Boolean, DateTime, JSON, Enum as SAEnum, ForeignKey, text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from app.database import Base
 import enum
+from typing import List, Optional
 
 
 class LeadCategory(str, enum.Enum):
@@ -102,3 +103,24 @@ class Lead(Base):
     optimal_channel: Mapped[str] = mapped_column(String(32), nullable=True)
     recommended_sequence_length: Mapped[int] = mapped_column(Integer, default=3)
     last_intelligence_update: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+
+    # Relationships
+    versions: Mapped[List["LeadVersion"]] = relationship("LeadVersion", back_populates="lead", order_by="desc(LeadVersion.version_number)", lazy="selectin")
+
+
+class LeadVersion(Base):
+    __tablename__ = "lead_versions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lead_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("leads.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=text("now()"))
+    changed_by: Mapped[Optional[UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    snapshot: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    change_description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    lead: Mapped["Lead"] = relationship("Lead", back_populates="versions")

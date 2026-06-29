@@ -22,3 +22,4 @@ class User(Base):
     # Multi-tenant relationships
     organizations = relationship("UserOrganization", back_populates="user", lazy="selectin")
     teams = relationship("UserTeam", back_populates="user", lazy="selectin")
+    user_projects = relationship("UserProject", back_populates="user", lazy="selectin")

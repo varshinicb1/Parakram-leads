@@ -5,6 +5,7 @@ from uuid import UUID
 
 
 class LeadCreate(BaseModel):
+    project_id: Optional[UUID] = None
     business_name: str
     owner_name: Optional[str] = None
     industry: Optional[str] = None
@@ -34,6 +35,7 @@ class LeadUpdate(BaseModel):
 
 class LeadResponse(BaseModel):
     id: UUID
+    project_id: Optional[UUID] = None
     business_name: str
     owner_name: Optional[str] = None
     industry: Optional[str] = None

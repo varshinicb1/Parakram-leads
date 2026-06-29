@@ -33,6 +33,7 @@ async def list_products(
     category_id: Optional[UUID] = None,
     status: Optional[str] = None,
     featured: Optional[bool] = None,
+    project_id: Optional[UUID] = None,
     page: int = 1,
     per_page: int = 20,
     db: AsyncSession = Depends(get_db),
@@ -41,7 +42,7 @@ async def list_products(
     _: None = Depends(require_role("admin", "member", "viewer")),
 ):
     products, total = await StoreService.list_products(
-        db, org.id, category_id, status, featured, page, per_page
+        db, org.id, category_id, status, featured, project_id, page, per_page
     )
     return {"products": products, "total": total, "page": page, "per_page": per_page}
 

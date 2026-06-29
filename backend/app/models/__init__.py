@@ -11,6 +11,11 @@ from app.models.store import (
     Product, ProductTier, ProductScreenshot, ProductCategory,
     ProductStatus, ProductPlatform,
 )
+from app.models.job import Job, JobStatus
+from app.models.capability import Capability, ExecutionTarget
+from app.models.project import Project, ProjectStatus
+from app.models.organization import UserProjectRole
+from app.models.lead import Lead, LeadCategory, LeadStatus, LeadVersion
 
 __all__ = [
     "Lead", "LeadCategory", "LeadStatus",
@@ -22,4 +27,9 @@ __all__ = [
     "OrgRole", "TeamRole", "SubscriptionTier",
     "Product", "ProductTier", "ProductScreenshot", "ProductCategory",
     "ProductStatus", "ProductPlatform",
+    "Job", "JobStatus",
+    "Capability", "ExecutionTarget",
+    "Project", "ProjectStatus",
+    "UserProjectRole",
+    "LeadVersion",
 ]

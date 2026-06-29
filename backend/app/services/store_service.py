@@ -20,6 +20,7 @@ class StoreService:
     def _to_list_response(product: Product) -> ProductListResponse:
         return ProductListResponse(
             id=product.id,
+            project_id=product.project_id,
             name=product.name,
             slug=product.slug,
             tagline=product.tagline,
@@ -99,6 +100,7 @@ class StoreService:
     async def list_products(
         db: AsyncSession, org_id: UUID, category_id: UUID | None = None,
         status: str | None = None, featured: bool | None = None,
+        project_id: UUID | None = None,
         page: int = 1, per_page: int = 20,
     ) -> tuple[list[ProductListResponse], int]:
         query = select(Product).where(
@@ -117,6 +119,9 @@ class StoreService:
         if featured is not None:
             query = query.where(Product.featured == featured)
             count_query = count_query.where(Product.featured == featured)
+        if project_id:
+            query = query.where(Product.project_id == project_id)
+            count_query = count_query.where(Product.project_id == project_id)
 
         total = (await db.execute(count_query)).scalar() or 0
         query = query.order_by(Product.sort_order, Product.created_at.desc())
@@ -141,6 +146,7 @@ class StoreService:
             return None
         return ProductDetailResponse(
             id=product.id,
+            project_id=product.project_id,
             name=product.name,
             slug=product.slug,
             tagline=product.tagline,

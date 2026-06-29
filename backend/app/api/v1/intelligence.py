@@ -20,6 +20,7 @@ from app.workers.intelligence_tasks import (
 )
 from app.workers.outreach_tasks import send_outreach_task
 from app.workers.linkedin_tasks import send_linkedin_message_task
+from app.services.job_engine import JobEngine
 import uuid
 
 router = APIRouter(prefix="/api/v1/intelligence", tags=["intelligence"])
@@ -168,11 +169,19 @@ async def trigger_lead_analysis(
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
 
-    task = run_full_intelligence_task.delay(str(lead.id))
+    job = await JobEngine.start(
+        db=db,
+        task_func=run_full_intelligence_task,
+        name=f"Full Intelligence Scan: {lead.business_name}",
+        org_id=lead.organization_id,
+        lead_id=lead.id,
+        args=(str(lead.id),),
+    )
     return {
         "lead_id": str(lead.id),
         "business_name": lead.business_name,
-        "task_id": task.id,
+        "job_id": str(job.id),
+        "task_id": job.celery_task_id,
         "status": "queued",
     }
 
@@ -252,11 +261,19 @@ async def trigger_linkedin_send(
     if not lead.outreach_approved:
         raise HTTPException(status_code=400, detail="Outreach not approved. Approve before sending.")
 
-    task = send_linkedin_message_task.delay(str(lead.id))
+    job = await JobEngine.start(
+        db=db,
+        task_func=send_linkedin_message_task,
+        name=f"Send LinkedIn: {lead.business_name}",
+        org_id=lead.organization_id,
+        lead_id=lead.id,
+        args=(str(lead.id),),
+    )
     return {
         "lead_id": str(lead.id),
         "business_name": lead.business_name,
         "linkedin_url": linkedin_url,
-        "task_id": task.id,
+        "job_id": str(job.id),
+        "task_id": job.celery_task_id,
         "status": "queued",
     }

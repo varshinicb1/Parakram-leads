@@ -25,6 +25,12 @@ class SubscriptionTier(str, enum.Enum):
     ENTERPRISE = "enterprise"
 
 
+class UserProjectRole(str, enum.Enum):
+    ADMIN = "admin"
+    MEMBER = "member"
+    VIEWER = "viewer"
+
+
 class Organization(Base):
     __tablename__ = "organizations"
 
@@ -46,6 +52,7 @@ class Organization(Base):
     # Relationships
     members = relationship("UserOrganization", back_populates="organization", lazy="selectin")
     teams = relationship("Team", back_populates="organization", lazy="selectin")
+    projects = relationship("Project", back_populates="organization", lazy="selectin")
 
 
 class Team(Base):
@@ -97,3 +104,23 @@ class UserTeam(Base):
     # Relationships
     user = relationship("User", back_populates="teams")
     team = relationship("Team", back_populates="members")
+
+
+class UserProject(Base):
+    __tablename__ = "user_projects"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    )
+    role: Mapped[str] = mapped_column(
+        SAEnum(UserProjectRole), default=UserProjectRole.MEMBER, nullable=False
+    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    joined_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    # Relationships - use table name for backref since projects already has its own relationship
+    user = relationship("User", back_populates="user_projects")
+    project = relationship("Project", back_populates="user_projects")

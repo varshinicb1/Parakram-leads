@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from app.workers.celery_app import celery_app
 from app.config import settings
 from app.workers.celery_app import run_async
+from app.services.job_engine import JobEngine
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,10 @@ def send_linkedin_message_task(self, lead_id: str) -> dict:
         dict with status and optional error message
     """
     try:
+        JobEngine.update_by_celery_task_id_sync(
+            self.request.id, status="RUNNING", progress=10
+        )
+
         engine = create_engine(settings.DATABASE_URL_SYNC)
         SessionLocal = sessionmaker(bind=engine)
         
@@ -30,6 +35,9 @@ def send_linkedin_message_task(self, lead_id: str) -> dict:
             
             lead = db.query(Lead).filter(Lead.id == lead_id).first()
             if not lead:
+                JobEngine.update_by_celery_task_id_sync(
+                    self.request.id, status="FAILED", error="lead_not_found"
+                )
                 return {"status": "failed", "error": "lead_not_found"}
             
             # Check if lead has LinkedIn profile
@@ -37,16 +45,29 @@ def send_linkedin_message_task(self, lead_id: str) -> dict:
             linkedin_url = social_profiles.get("linkedin", "")
             
             if not linkedin_url:
+                JobEngine.update_by_celery_task_id_sync(
+                    self.request.id, status="FAILED", error="no_linkedin_url"
+                )
                 return {"status": "skipped", "reason": "no_linkedin_url"}
             
             # Get outreach message
             message_text = lead.outreach_message_linkedin
             if not message_text:
+                JobEngine.update_by_celery_task_id_sync(
+                    self.request.id, status="FAILED", error="no_outreach_message"
+                )
                 return {"status": "skipped", "reason": "no_outreach_message"}
             
             # Check LinkedIn credentials
             if not settings.LINKEDIN_EMAIL or not settings.LINKEDIN_PASSWORD:
+                JobEngine.update_by_celery_task_id_sync(
+                    self.request.id, status="FAILED", error="no_linkedin_credentials"
+                )
                 return {"status": "skipped", "reason": "no_linkedin_credentials"}
+            
+            JobEngine.update_by_celery_task_id_sync(
+                self.request.id, progress=40
+            )
             
             # Send via LinkedIn messenger
             success = run_async(_send_linkedin_async(linkedin_url, message_text))
@@ -54,12 +75,21 @@ def send_linkedin_message_task(self, lead_id: str) -> dict:
             if success:
                 lead.outreach_sent = True
                 db.commit()
+                JobEngine.update_by_celery_task_id_sync(
+                    self.request.id, status="COMPLETED", progress=100
+                )
                 return {"status": "sent", "lead_id": lead_id}
             else:
+                JobEngine.update_by_celery_task_id_sync(
+                    self.request.id, status="FAILED", error="send_failed"
+                )
                 return {"status": "failed", "error": "send_failed"}
                 
     except Exception as e:
         logger.error(f"LinkedIn message task failed for lead {lead_id}: {e}")
+        JobEngine.update_by_celery_task_id_sync(
+            self.request.id, status="FAILED", error=str(e)
+        )
         try:
             self.retry(exc=e)
         except self.MaxRetriesExceededError:
