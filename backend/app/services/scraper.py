@@ -1,5 +1,6 @@
 import asyncio
 import random
+import uuid
 import re
 import json
 import os
@@ -564,3 +565,4 @@ async def scrape_single_category(
         print(f"  Saved {saved} to DB")
 
     return all_leads
+

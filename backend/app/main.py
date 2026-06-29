@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import init_db
-from app.api.v1 import leads, auth, messages, alerts, webhooks, scraper, organizations
+from app.api.v1 import leads, auth, messages, alerts, webhooks, scraper, organizations, intelligence, audit
 from app.middleware.logging import StructuredLoggingMiddleware, configure_structlog
 from app.middleware.metrics import PrometheusMetricsMiddleware, metrics_endpoint
+from app.middleware.rate_limit import RateLimitMiddleware
+from app.middleware.audit import AuditMiddleware
 
 
 @asynccontextmanager
@@ -36,8 +38,11 @@ app.add_middleware(StructuredLoggingMiddleware)
 if settings.PROMETHEUS_ENABLED:
     app.add_middleware(PrometheusMetricsMiddleware)
 
-# Rate limit middleware will be registered here
-# Audit middleware will be registered here
+# Rate limiting middleware
+app.add_middleware(RateLimitMiddleware)
+
+# Audit logging middleware
+app.add_middleware(AuditMiddleware)
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(organizations.router, prefix="/api/v1")
@@ -46,6 +51,12 @@ app.include_router(messages.router, prefix="/api/v1")
 app.include_router(alerts.router, prefix="/api/v1")
 app.include_router(webhooks.router, prefix="/api/v1")
 app.include_router(scraper.router, prefix="/api/v1")
+
+# Intelligence routes — predictive scoring, sequences, enrichment, response analysis
+app.include_router(intelligence.router)
+
+# Audit log routes
+app.include_router(audit.router, prefix="/api/v1")
 
 
 @app.get("/health")

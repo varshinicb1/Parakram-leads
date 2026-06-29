@@ -61,6 +61,13 @@ class LeadResponse(BaseModel):
     outreach_sent: bool
     response_received: bool
     response_text: Optional[str] = None
+    # Predictive Intelligence
+    predictive_quality_score: float = 0.0
+    conversion_probability: float = 0.0
+    buying_urgency: float = 0.0
+    optimal_channel: Optional[str] = None
+    recommended_sequence_length: int = 3
+    last_intelligence_update: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

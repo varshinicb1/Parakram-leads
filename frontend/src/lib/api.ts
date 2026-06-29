@@ -33,32 +33,32 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
 export function getToken(): string | null {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('sigma_token');
+    return localStorage.getItem('parakram_token');
   }
   return null;
 }
 
 export function setToken(token: string) {
-  localStorage.setItem('sigma_token', token);
+  localStorage.setItem('parakram_token', token);
 }
 
 export function clearToken() {
-  localStorage.removeItem('sigma_token');
+  localStorage.removeItem('parakram_token');
 }
 
 export function getOrgId(): string | null {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('sigma_org_id');
+    return localStorage.getItem('parakram_org_id');
   }
   return null;
 }
 
 export function setOrgId(orgId: string) {
-  localStorage.setItem('sigma_org_id', orgId);
+  localStorage.setItem('parakram_org_id', orgId);
 }
 
 export function clearOrgId() {
-  localStorage.removeItem('sigma_org_id');
+  localStorage.removeItem('parakram_org_id');
 }
 
 export const api = {
@@ -87,6 +87,8 @@ export const api = {
       request<void>(`/leads/${id}`, { method: 'DELETE', token: getToken() || undefined }),
     approveOutreach: (id: string, data: any) =>
       request<any>(`/leads/${id}/approve-outreach`, { method: 'POST', body: data, token: getToken() || undefined }),
+    bulk: (data: { lead_ids: string[]; action: string }) =>
+      request<any>('/leads/bulk', { method: 'POST', body: data, token: getToken() || undefined }),
   },
   messages: {
     list: (leadId?: string) => {
@@ -126,8 +128,75 @@ export const api = {
     createTeam: (orgId: string, data: { name: string; description?: string }) =>
       request<any>(`/organizations/${orgId}/teams`, { method: 'POST', body: data, token: getToken() || undefined }),
   },
+  scraper: {
+    importCsv: (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const orgId = getOrgId();
+      const headers: Record<string, string> = {};
+      const token = getToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (orgId) headers['X-Organization-ID'] = orgId;
+      return fetch(`${API_BASE}/scraper/import-csv`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      }).then(async (res) => {
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: res.statusText }));
+          throw new Error(err.detail || 'Import failed');
+        }
+        return res.json();
+      });
+    },
+    exportCsv: () => {
+      const token = getToken();
+      const orgId = getOrgId();
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (orgId) headers['X-Organization-ID'] = orgId;
+      return fetch(`${API_BASE}/scraper/export-csv`, { headers }).then(async (res) => {
+        if (!res.ok) throw new Error('Export failed');
+        return res.blob();
+      });
+    },
+    run: (data: any) =>
+      request<any>('/scraper/run', { method: 'POST', body: data, token: getToken() || undefined }),
+    categories: () =>
+      request<any[]>('/scraper/categories', { token: getToken() || undefined }),
+    locations: () =>
+      request<any[]>('/scraper/locations', { token: getToken() || undefined }),
+  },
   dashboard: {
     get: () =>
       request<any>('/messages/dashboard', { token: getToken() || undefined }),
+  },
+  intelligence: {
+    predict: (leadId: string) =>
+      request<any>(`/intelligence/predict/${leadId}`, { token: getToken() || undefined }),
+    sequence: (leadId: string) =>
+      request<any>(`/intelligence/sequence/${leadId}`, { token: getToken() || undefined }),
+    enrich: (leadId: string) =>
+      request<any>(`/intelligence/enrich/${leadId}`, { token: getToken() || undefined }),
+    full: (leadId: string) =>
+      request<any>(`/intelligence/full/${leadId}`, { token: getToken() || undefined }),
+    analyzeResponse: (data: { reply_text: string; lead_name?: string }) =>
+      request<any>('/intelligence/analyze-response', { method: 'POST', body: data, token: getToken() || undefined }),
+    prioritizeBatch: (leadIds: string[]) =>
+      request<any>('/intelligence/prioritize-batch', { method: 'POST', body: { lead_ids: leadIds }, token: getToken() || undefined }),
+    triggerAnalysis: (leadId: string) =>
+      request<any>(`/intelligence/analyze/${leadId}`, { method: 'POST', token: getToken() || undefined }),
+    alerts: (limit?: number) =>
+      request<any>(`/intelligence/alerts${limit ? `?limit=${limit}` : ''}`, { token: getToken() || undefined }),
+    sendLinkedin: (leadId: string) =>
+      request<any>(`/intelligence/send-linkedin/${leadId}`, { method: 'POST', token: getToken() || undefined }),
+  },
+  audit: {
+    list: (params?: Record<string, string | number>) => {
+      const qs = params ? '?' + new URLSearchParams(
+        Object.entries(params).map(([k, v]) => [k, String(v)])
+      ).toString() : '';
+      return request<any>(`/audit${qs}`, { token: getToken() || undefined });
+    },
   },
 };

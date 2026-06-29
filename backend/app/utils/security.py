@@ -31,6 +31,19 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
+def decode_token(token: str) -> dict:
+    """Decode and validate a JWT token, returning the payload."""
+    return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+
+
+def get_token_from_request(request) -> Optional[str]:
+    """Extract Bearer token from a Request object."""
+    auth = request.headers.get("authorization", "")
+    if auth.startswith("Bearer "):
+        return auth.split(" ", 1)[1]
+    return None
+
+
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),

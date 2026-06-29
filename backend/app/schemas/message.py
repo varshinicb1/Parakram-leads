@@ -31,3 +31,11 @@ class DashboardResponse(BaseModel):
     estimated_pipeline_value: float
     conversion_rate: float
     revenue_forecast: float
+    # Predictive Intelligence Metrics
+    high_priority_leads: int = 0
+    leads_ready_to_contact: int = 0
+    avg_quality_score: float = 0.0
+    avg_conversion_probability: float = 0.0
+    top_lead: Optional[dict] = None
+    # Pipeline Funnel
+    pipeline_counts: Optional[dict] = None

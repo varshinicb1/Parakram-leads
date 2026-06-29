@@ -11,6 +11,7 @@ celery_app = Celery(
         "app.workers.outreach_tasks",
         "app.workers.scoring_tasks",
         "app.workers.reporting_tasks",
+        "app.workers.intelligence_tasks",
     ],
 )
 
@@ -38,6 +39,16 @@ celery_app.conf.update(
         "daily-retention-check": {
             "task": "app.workers.retention_tasks.enforce_retention_task",
             "schedule": crontab(hour=3, minute=0),
+        },
+        "intelligence-batch-scan": {
+            "task": "app.workers.intelligence_tasks.batch_intelligence_scan_task",
+            "schedule": crontab(hour=0, minute=30),
+            "args": (100,),
+        },
+        "buying-signal-check": {
+            "task": "app.workers.intelligence_tasks.batch_intelligence_scan_task",
+            "schedule": crontab(hour="*/6", minute=15),
+            "args": (50,),
         },
     },
 )

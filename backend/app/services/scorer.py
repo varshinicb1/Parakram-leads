@@ -1,5 +1,6 @@
 from app.models.lead import Lead
 from app.services.collector import analyze_website_async
+from app.services.predictive_scorer import compute_predictive_score
 
 
 DIGITAL_MATURITY_WEIGHTS = {
@@ -103,4 +104,14 @@ async def compute_scores(lead: Lead) -> tuple[float, float]:
 
     dm = await calculate_digital_maturity(lead)
     opp = await calculate_opportunity_score(lead)
+    pred = await compute_predictive_score(lead)
+    lead.opportunity_score = round(opp, 2)
+    lead.digital_maturity_score = round(dm, 2)
+    lead.predictive_quality_score = pred.get("overall_quality", 0)
+    lead.conversion_probability = pred.get("conversion_probability", 0)
+    lead.buying_urgency = pred.get("urgency", 0)
+    lead.optimal_channel = pred.get("optimal_channel")
+    lead.recommended_sequence_length = pred.get("recommended_sequence_length", 3)
+    from datetime import datetime
+    lead.last_intelligence_update = datetime.utcnow()
     return round(dm, 2), round(opp, 2)

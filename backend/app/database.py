@@ -3,15 +3,41 @@ from sqlalchemy.orm import DeclarativeBase
 from app.config import settings
 
 
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DEBUG,
-    pool_size=settings.DB_POOL_SIZE,
-    max_overflow=settings.DB_MAX_OVERFLOW,
-    pool_pre_ping=True,
-    pool_recycle=3600,
-)
-async_session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+class _LazyEngine:
+    def __init__(self):
+        self._engine = None
+
+    def __getattr__(self, name):
+        if self._engine is None:
+            self._engine = create_async_engine(
+                settings.DATABASE_URL,
+                echo=settings.DEBUG,
+                pool_size=settings.DB_POOL_SIZE,
+                max_overflow=settings.DB_MAX_OVERFLOW,
+                pool_pre_ping=True,
+                pool_recycle=3600,
+            )
+        return getattr(self._engine, name)
+
+
+class _LazySessionFactory:
+    def __init__(self, engine):
+        self._factory = None
+        self._engine = engine
+
+    def __call__(self):
+        if self._factory is None:
+            self._factory = async_sessionmaker(
+                self._engine, class_=AsyncSession, expire_on_commit=False
+            )
+        return self._factory
+
+    def __getattr__(self, name):
+        return getattr(self.__call__(), name)
+
+
+engine = _LazyEngine()
+async_session_factory = _LazySessionFactory(engine)
 
 
 class Base(DeclarativeBase):
@@ -19,7 +45,8 @@ class Base(DeclarativeBase):
 
 
 async def get_db():
-    async with async_session_factory() as session:
+    factory = async_session_factory()
+    async with factory() as session:
         try:
             yield session
             await session.commit()

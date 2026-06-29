@@ -94,3 +94,11 @@ class Lead(Base):
     gdpr_consent_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     soft_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
     soft_deleted_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+
+    # Predictive Intelligence Fields (computed by the engine, stored for queries)
+    predictive_quality_score: Mapped[float] = mapped_column(Float, default=0.0)
+    conversion_probability: Mapped[float] = mapped_column(Float, default=0.0)
+    buying_urgency: Mapped[float] = mapped_column(Float, default=0.0)
+    optimal_channel: Mapped[str] = mapped_column(String(32), nullable=True)
+    recommended_sequence_length: Mapped[int] = mapped_column(Integer, default=3)
+    last_intelligence_update: Mapped[datetime] = mapped_column(DateTime, nullable=True)
