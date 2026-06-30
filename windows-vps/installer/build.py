@@ -30,6 +30,7 @@ import os
 import sys
 import json
 import hashlib
+import importlib.util
 import shutil
 import subprocess
 import time
@@ -100,19 +101,16 @@ def validate_environment() -> list[str]:
     if sys.platform != "win32":
         issues.append(f"Build platform is '{sys.platform}', Windows required for EXE builds")
 
-    # Dependencies
+    # Dependencies (map pip name -> importable module name)
+    import_names = {"PIL": "PIL", "pyinstaller": "PyInstaller"}
     for dep in REQUIRED_DEPS:
-        try:
-            if dep == "PIL":
-                import PIL  # noqa
-            else:
-                __import__(dep)
-        except ImportError:
+        module = import_names.get(dep, dep)
+        if importlib.util.find_spec(module) is None:
             issues.append(f"Missing dependency: {dep}")
 
-    # Source files
+    # Source files (icon is optional — build skips it when absent)
     required_sources = [ROOT / "app.py", ROOT / "theme.py", CORE_DIR / "setup_engine.py",
-                        CORE_DIR / "api_client.py", ASSETS_DIR / "icon.ico"]
+                        CORE_DIR / "api_client.py"]
     for src in required_sources:
         if not src.exists():
             issues.append(f"Missing source file: {src.name}")
@@ -211,8 +209,9 @@ def build_exe(version: str = "2.0.0") -> Optional[Path]:
     cmd.extend([
         "--add-data", f"{CORE_DIR}{os.pathsep}core",
         "--add-data", f"{ROOT / 'theme.py'}{os.pathsep}.",
-        "--add-data", f"{ROOT / 'version.txt' if VERSION_FILE.exists() else ''}",
     ])
+    if VERSION_FILE.exists():
+        cmd.extend(["--add-data", f"{VERSION_FILE}{os.pathsep}core"])
     if ASSETS_DIR.exists():
         cmd.extend(["--add-data", f"{ASSETS_DIR}{os.pathsep}assets"])
 
