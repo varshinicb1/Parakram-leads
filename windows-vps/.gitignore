@@ -1,0 +1,28 @@
+# Build artifacts
+dist/
+*.msi
+*.wixpdb
+*.exe
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Dashboard build output
+dashboard/dist/
+dashboard/dist/*
+
+# WiX generated
+wix/GeneratedFiles.wxs
+
+# Runtime downloads
+dashboard/dist/runtime/
+
+# VS Code
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

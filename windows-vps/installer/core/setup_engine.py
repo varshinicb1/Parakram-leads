@@ -48,6 +48,17 @@ CONFIG_FILE_TMP = INSTALL_DIR / "config.json.tmp"
 CHECKPOINT_FILE = INSTALL_DIR / ".checkpoint"
 DASHBOARD_PORT_BASE = 9876
 DASHBOARD_PORT_MAX_RETRIES = 5
+
+# ── Open Source Integration URLs ────────────────────────────────────────
+CADDY_URL = "https://github.com/caddyserver/caddy/releases/latest/download/caddy_2-windows-amd64.zip"
+RESTIC_URL = "https://github.com/restic/restic/releases/latest/download/restic_0.18.0_windows_amd64.zip"
+NEBULA_URL = "https://github.com/slackhq/nebula/releases/latest/download/nebula-windows-amd64.zip"
+NEBULA_CERT_URL = "https://github.com/slackhq/nebula/releases/latest/download/nebula-cert-windows-amd64.zip"
+
+CADDY_DIR = INSTALL_DIR / "caddy"
+RESTIC_DIR = INSTALL_DIR / "restic"
+NEBULA_DIR = INSTALL_DIR / "nebula"
+CADDYFILE = INSTALL_DIR / "caddy" / "Caddyfile"
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 1.0
 CLOUDFLARED_URL = (
@@ -227,8 +238,13 @@ class Checkpoint:
         "open_ssh",
         "dashboard",
         "cloudflared",
+        "caddy",
+        "restic",
+        "nebula",
         "startup",
         "start_dashboard",
+        "start_caddy",
+        "start_nebula",
         "firewall",
         "docker",
         "leads_backend",
@@ -670,45 +686,252 @@ class SetupEngine:
         Checkpoint.commit("cloudflared")
         return True
 
+    # ── Caddy ────────────────────────────────────────────────────────────
+
+    @retry(max_attempts=3, backoff=2.0)
+    def step_caddy(self) -> bool:
+        """Download Caddy reverse proxy + generate Caddyfile."""
+        if Checkpoint.is_completed("caddy"):
+            self.progress(50, "Caddy reverse proxy ready (checkpoint)")
+            return True
+
+        self.progress(46, "Downloading Caddy reverse proxy...")
+        caddy_dir = CADDY_DIR
+        caddy_dir.mkdir(parents=True, exist_ok=True)
+        caddy_exe = caddy_dir / "caddy.exe"
+
+        import httpx
+        import zipfile
+        import io
+        with httpx.Client(follow_redirects=True, timeout=120) as client:
+            self.progress(47, "Connecting to GitHub...")
+            resp = client.get(CADDY_URL)
+            resp.raise_for_status()
+            self.progress(48, "Extracting...")
+            z = zipfile.ZipFile(io.BytesIO(resp.content))
+            z.extract("caddy.exe", str(caddy_dir))
+
+        if not caddy_exe.exists():
+            raise InstallError(
+                "Failed to extract Caddy binary",
+                severity=ErrorSeverity.RECOVERABLE,
+                code="CADDY_EXTRACT",
+                recovery_hint="Retry installation"
+            )
+
+        public_port = 443 if not getattr(self, "caddy_port", None) else self.caddy_port
+        self.caddy_port = public_port
+        self.set_config("caddy_port", str(public_port))
+        dashboard_port = self.dashboard_port or 9876
+
+        caddyfile_content = f""":{public_port} {{
+    bind 0.0.0.0
+    @api path /a/*
+    reverse_proxy @api 127.0.0.1:{dashboard_port}
+    root * {INSTALL_DIR / "dashboard"}
+    try_files {{path}} /index.html
+    file_server
+}}"""
+        atomic_write(CADDYFILE, caddyfile_content.strip())
+        audit("CADDY", f"Downloaded Caddy, port {public_port}", "INFO")
+        self.progress(50, "Caddy reverse proxy ready")
+        Checkpoint.commit("caddy")
+        return True
+
+    def step_start_caddy(self) -> bool:
+        """Start Caddy reverse proxy process."""
+        if Checkpoint.is_completed("start_caddy"):
+            return True
+        self.progress(66, "Starting Caddy...")
+        caddy_exe = CADDY_DIR / "caddy.exe"
+        if not caddy_exe.exists():
+            log("CADDY: Binary not found, skipping")
+            Checkpoint.commit("start_caddy")
+            return True
+        self._run_powershell(
+            "Get-Process caddy -ErrorAction SilentlyContinue | Stop-Process -Force"
+        )
+        subprocess.Popen(
+            [str(caddy_exe), "run", "--config", str(CADDYFILE)],
+            cwd=str(CADDY_DIR), creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+        audit("CADDY", "Caddy reverse proxy started", "INFO")
+        self.progress(67, "Caddy running")
+        Checkpoint.commit("start_caddy")
+        return True
+
+    # ── Restic (Encrypted Backups) ───────────────────────────────────────
+
+    @retry(max_attempts=3, backoff=2.0)
+    def step_restic(self) -> bool:
+        """Download restic backup binary."""
+        if Checkpoint.is_completed("restic"):
+            self.progress(53, "Restic backup tool ready (checkpoint)")
+            return True
+        self.progress(51, "Downloading restic backup tool...")
+        restic_dir = RESTIC_DIR
+        restic_dir.mkdir(parents=True, exist_ok=True)
+        restic_exe = restic_dir / "restic.exe"
+        import httpx, zipfile, io
+        with httpx.Client(follow_redirects=True, timeout=120) as client:
+            self.progress(52, "Connecting to GitHub...")
+            resp = client.get(RESTIC_URL)
+            resp.raise_for_status()
+            self.progress(52, "Extracting...")
+            z = zipfile.ZipFile(io.BytesIO(resp.content))
+            z.extract("restic.exe", str(restic_dir))
+        if not restic_exe.exists():
+            raise InstallError("Failed to extract restic", severity=ErrorSeverity.RECOVERABLE, code="RESTIC_EXTRACT")
+        audit("RESTIC", "Downloaded restic", "INFO")
+        self.progress(53, "Restic backup tool ready")
+        Checkpoint.commit("restic")
+        return True
+
+    # ── Nebula (Mesh VPN) ────────────────────────────────────────────────
+
+    @retry(max_attempts=3, backoff=2.0)
+    def step_nebula(self) -> bool:
+        """Download Nebula, generate certs, create config."""
+        if Checkpoint.is_completed("nebula"):
+            self.progress(56, "Nebula VPN ready (checkpoint)")
+            return True
+        self.progress(54, "Downloading Nebula VPN...")
+        nebula_dir = NEBULA_DIR
+        nebula_dir.mkdir(parents=True, exist_ok=True)
+        nebula_exe = nebula_dir / "nebula.exe"
+        nebula_cert_exe = nebula_dir / "nebula-cert.exe"
+        import httpx, zipfile, io
+        with httpx.Client(follow_redirects=True, timeout=120) as client:
+            self.progress(54, "Downloading Nebula binary...")
+            resp = client.get(NEBULA_URL)
+            resp.raise_for_status()
+            z = zipfile.ZipFile(io.BytesIO(resp.content))
+            z.extract("nebula.exe", str(nebula_dir))
+            self.progress(55, "Downloading cert tool...")
+            resp2 = client.get(NEBULA_CERT_URL)
+            resp2.raise_for_status()
+            z2 = zipfile.ZipFile(io.BytesIO(resp2.content))
+            z2.extract("nebula-cert.exe", str(nebula_dir))
+        hostname = os.environ.get("COMPUTERNAME", "vps-node").lower()
+        nebula_ip = self._config.get("nebula_ip", "10.200.200.1")
+        subprocess.run([str(nebula_cert_exe), "ca", "-name", "Parakram Mesh",
+            "-out-crt", str(nebula_dir / "ca.crt"), "-out-key", str(nebula_dir / "ca.key")],
+            capture_output=True, check=False)
+        subprocess.run([str(nebula_cert_exe), "sign", "-name", hostname, "-ip", nebula_ip,
+            "-ca-crt", str(nebula_dir / "ca.crt"), "-ca-key", str(nebula_dir / "ca.key"),
+            "-out-crt", str(nebula_dir / f"{hostname}.crt"),
+            "-out-key", str(nebula_dir / f"{hostname}.key")],
+            capture_output=True, check=False)
+        nebula_config = f"""pki:
+  ca: {nebula_dir}\\ca.crt
+  cert: {nebula_dir}\\{hostname}.crt
+  key: {nebula_dir}\\{hostname}.key
+lighthouse:
+  am_lighthouse: true
+  serve_dns: false
+listen:
+  host: 0.0.0.0
+  port: 4242
+punchy: true
+tun:
+  dev: parakram
+  drop_local_broadcast: false
+  drop_multicast: false
+  mtu: 1300
+  tx_queue: 500
+logging:
+  level: info
+  format: text
+"""
+        atomic_write(nebula_dir / "config.yml", nebula_config)
+        audit("NEBULA", f"Generated certs for {hostname} @ {nebula_ip}", "INFO")
+        self.progress(56, "Nebula VPN ready")
+        Checkpoint.commit("nebula")
+        return True
+
+    def step_start_nebula(self) -> bool:
+        """Start Nebula VPN process."""
+        if Checkpoint.is_completed("start_nebula"):
+            return True
+        self.progress(68, "Starting Nebula VPN...")
+        nebula_exe = NEBULA_DIR / "nebula.exe"
+        config = NEBULA_DIR / "config.yml"
+        if not nebula_exe.exists():
+            log("NEBULA: Binary not found, skipping")
+            Checkpoint.commit("start_nebula")
+            return True
+        self._run_powershell(
+            "Get-Process nebula -ErrorAction SilentlyContinue | Stop-Process -Force"
+        )
+        subprocess.Popen([str(nebula_exe), "-config", str(config)],
+            cwd=str(NEBULA_DIR), creationflags=subprocess.CREATE_NO_WINDOW)
+        audit("NEBULA", "Nebula VPN started", "INFO")
+        self.progress(69, "Nebula VPN running")
+        Checkpoint.commit("start_nebula")
+        return True
+
     def step_startup(self) -> bool:
-        """Configure auto-start via Task Scheduler with redundancy."""
+        """Configure auto-start via Task Scheduler for all services."""
         if Checkpoint.is_completed("startup"):
             self.progress(55, "Auto-start configured (checkpoint)")
             return True
 
         self.progress(50, "Configuring auto-start on boot...")
 
-        # First, remove any existing task to avoid conflicts
+        for task in ["ParakramVPS-Dashboard", "ParakramVPS-Caddy", "ParakramVPS-Nebula"]:
+            self._run_powershell(
+                f'Unregister-ScheduledTask -TaskName "{task}" -Confirm:$false '
+                f'-ErrorAction SilentlyContinue'
+            )
         self._run_powershell(
             'Unregister-ScheduledTask -TaskName "ParakramVPS-Dashboard" -Confirm:$false '
             '-ErrorAction SilentlyContinue'
         )
 
         dashboard_ps1 = INSTALL_DIR / "dashboard" / "dashboard-server.ps1"
-        code, _, _ = self._run_powershell(
-            f"""
-            $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument @"
--ExecutionPolicy Bypass -WindowStyle Hidden -File "{dashboard_ps1}"
-"@
-            $trigger = New-ScheduledTaskTrigger -AtStartup
-            $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
-            $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-            Register-ScheduledTask -TaskName "ParakramVPS-Dashboard" `
-                -Action $action -Trigger $trigger -Principal $principal `
-                -Settings $settings `
-                -Description "Parakram VPS Management Dashboard - ships with {INSTALLER_VERSION}" -Force
-            """,
-            critical=True,
-        )
+        caddy_exe = CADDY_DIR / "caddy.exe"
+        nebula_exe = NEBULA_DIR / "nebula.exe"
+        nebula_config = NEBULA_DIR / "config.yml"
 
-        # Verify task registered
+        tasks_to_register = [
+            ("ParakramVPS-Dashboard",
+             f'"powershell.exe"', f'-ExecutionPolicy Bypass -WindowStyle Hidden -File "{dashboard_ps1}"',
+             "Parakram VPS Management Dashboard"),
+            ("ParakramVPS-Caddy",
+             f'"{caddy_exe}"', f'run --config "{CADDYFILE}"',
+             "Parakram VPS Caddy Reverse Proxy"),
+            ("ParakramVPS-Nebula",
+             f'"{nebula_exe}"', f'-config "{nebula_config}"',
+             "Parakram VPS Nebula Mesh VPN"),
+        ]
+
+        for task_name, exe, args_str, desc in tasks_to_register:
+            if not Path(exe.replace('"', "")).exists():
+                log(f"STARTUP: {task_name} binary not found, skipping")
+                continue
+            self._run_powershell(
+                f"""
+                $action = New-ScheduledTaskAction -Execute {exe} -Argument @"
+{args_str}
+"@
+                $trigger = New-ScheduledTaskTrigger -AtStartup
+                $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
+                $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+                Register-ScheduledTask -TaskName "{task_name}" `
+                    -Action $action -Trigger $trigger -Principal $principal `
+                    -Settings $settings `
+                    -Description "{desc} - ships with {INSTALLER_VERSION}" -Force
+                """,
+                critical=True,
+            )
+
         code, stdout, _ = self._run_powershell(
             "Get-ScheduledTask -TaskName 'ParakramVPS-Dashboard' -ErrorAction Stop | "
             "Format-Table TaskName,State,Enabled -AutoSize"
         )
         if code != 0:
             raise InstallError(
-                "Failed to register scheduled task",
+                "Failed to register dashboard scheduled task",
                 severity=ErrorSeverity.DEGRADED,
                 code="TASK_REG_FAIL",
                 recovery_hint="Run 'taskschd.msc' as Administrator and check permissions"
@@ -762,41 +985,31 @@ class SetupEngine:
         return True
 
     def step_firewall(self) -> bool:
-        """Configure Windows Firewall with idempotency."""
+        """Configure Windows Firewall for all services."""
         if Checkpoint.is_completed("firewall"):
             self.progress(75, "Firewall configured (checkpoint)")
             return True
 
         self.progress(70, "Configuring Windows Firewall...")
+        self._run_powershell('Start-Service -Name MpsSvc -ErrorAction SilentlyContinue')
 
-        # Verify firewall service is running
-        self._run_powershell(
-            'Start-Service -Name MpsSvc -ErrorAction SilentlyContinue'
-        )
+        rules = [
+            ("Parakram VPS Dashboard", f"Port {self.dashboard_port} for management dashboard",
+             str(self.dashboard_port)),
+            ("Parakram VPS Caddy", "Port 443 for Caddy HTTPS reverse proxy", "443"),
+            ("Parakram VPS Nebula", "Port 4242 for Nebula mesh VPN", "4242"),
+        ]
 
-        # Remove existing rule first
-        self._run_powershell(
-            'Remove-NetFirewallRule -DisplayName "Parakram VPS Dashboard" '
-            '-ErrorAction SilentlyContinue'
-        )
-
-        rule_name = f"Parakram VPS Dashboard (Port {self.dashboard_port})"
-        code, _, _ = self._run_powershell(
-            f'New-NetFirewallRule -DisplayName "{rule_name}" '
-            f'-Description "Allows inbound access to Parakram VPS management dashboard" '
-            f'-Direction Inbound -Protocol TCP -LocalPort {self.dashboard_port} '
-            f'-Action Allow -Profile Any -ErrorAction Stop | Out-Null'
-        )
-
-        # Verify rule exists
-        code, stdout, _ = self._run_powershell(
-            f"Get-NetFirewallRule -DisplayName '{rule_name}' -ErrorAction SilentlyContinue | "
-            f"Format-Table DisplayName,Enabled,Action -AutoSize"
-        )
-        if code != 0 or not stdout.strip():
-            log("FIREWALL: Rule might not be created; continuing")
-        else:
-            log(f"FIREWALL: Rule verified:\n{stdout}")
+        for display, desc, port in rules:
+            self._run_powershell(
+                f'Remove-NetFirewallRule -DisplayName "{display}" -ErrorAction SilentlyContinue'
+            )
+            self._run_powershell(
+                f'New-NetFirewallRule -DisplayName "{display}" '
+                f'-Description "{desc}" '
+                f'-Direction Inbound -Protocol TCP -LocalPort {port} '
+                f'-Action Allow -Profile Any -ErrorAction Stop | Out-Null'
+            )
 
         self.progress(75, "Firewall configured")
         Checkpoint.commit("firewall")
@@ -1101,15 +1314,20 @@ class SetupEngine:
 
             # ── Phase 3: Execute Steps ─────────────────────────────
             steps = [
-                ("open_ssh", "OpenSSH Server", self.step_open_ssh, 18),
-                ("dashboard", "Dashboard", self.step_dashboard, 30),
-                ("cloudflared", "Cloudflare Tunnel", self.step_cloudflared, 45),
-                ("startup", "Auto-Start", self.step_startup, 55),
-                ("start_dashboard", "Start Dashboard", self.step_start_dashboard, 65),
-                ("firewall", "Firewall", self.step_firewall, 75),
-                ("docker", "Docker Desktop", self.step_docker, 80),
-                ("leads_backend", "Leads Backend", self.step_deploy_leads_backend, 90),
-                ("cloudflare_leads_route", "Leads Tunnel Route", self.step_cloudflare_leads_route, 95),
+                ("open_ssh", "OpenSSH Server", self.step_open_ssh, 14),
+                ("dashboard", "Dashboard", self.step_dashboard, 24),
+                ("cloudflared", "Cloudflare Tunnel", self.step_cloudflared, 36),
+                ("caddy", "Caddy Reverse Proxy", self.step_caddy, 46),
+                ("restic", "Restic Backup", self.step_restic, 53),
+                ("nebula", "Nebula Mesh VPN", self.step_nebula, 60),
+                ("startup", "Auto-Start", self.step_startup, 64),
+                ("start_dashboard", "Start Dashboard", self.step_start_dashboard, 68),
+                ("start_caddy", "Start Caddy", self.step_start_caddy, 70),
+                ("start_nebula", "Start Nebula", self.step_start_nebula, 72),
+                ("firewall", "Firewall", self.step_firewall, 78),
+                ("docker", "Docker Desktop", self.step_docker, 84),
+                ("leads_backend", "Leads Backend", self.step_deploy_leads_backend, 92),
+                ("cloudflare_leads_route", "Leads Tunnel Route", self.step_cloudflare_leads_route, 97),
             ]
 
             step_results: dict[str, bool] = {}

@@ -39,6 +39,7 @@ from tkinter import font as tkfont
 from pathlib import Path
 from typing import Optional, Any
 from enum import Enum
+from PIL import Image, ImageTk
 
 # ─── Third-party ─────────────────────────────────────────────────────────
 try:
@@ -58,6 +59,9 @@ from core.api_client import ParakramAPI, APIError, ErrorSeverity
 from core.setup_engine import SetupEngine, INSTALL_DIR, LOG_FILE, Checkpoint, InstallError
 from core.updater import AutoUpdater, UpdateInfo
 from core.heartbeat import HeartbeatService
+
+ROOT_DIR = Path(__file__).parent
+ASSETS_DIR = ROOT_DIR / "assets"
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -183,16 +187,21 @@ class ParakramVPSInstaller(ctk.CTk):
 
         # Brand header
         header_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        header_frame.pack(pady=(32, 0))
+        header_frame.pack(pady=(28, 0))
 
-        logo_dot = ctk.CTkLabel(
-            header_frame, text="⏻", font=("Segoe UI", 18),
-            text_color=GOLD,
-        )
-        logo_dot.pack(pady=(0, 6))
+        try:
+            logo_img = Image.open(ASSETS_DIR / "logo_ui.png")
+            self._sidebar_logo = ImageTk.PhotoImage(logo_img)
+            logo_label = ctk.CTkLabel(
+                header_frame, image=self._sidebar_logo, text="",
+                fg_color="transparent",
+            )
+            logo_label.pack(pady=(0, 8))
+        except Exception:
+            pass
 
         title = ctk.CTkLabel(
-            header_frame, text="PARAKRAM", font=("Segoe UI", 13, "bold"),
+            header_frame, text="PARAKRAM", font=("Segoe UI", 12, "bold"),
             text_color=GOLD,
         )
         title.pack(pady=(0, 2))
@@ -271,19 +280,28 @@ class ParakramVPSInstaller(ctk.CTk):
         spacer = ctk.CTkLabel(page, text="", font=FONT_LARGE)
         spacer.pack(expand=True)
 
-        # Glow effect behind logo
-        glow = ctk.CTkLabel(
-            page, text="", fg_color=GOLD, width=80, height=80,
-            corner_radius=40,
-        )
-        glow.place(relx=0.5, rely=0.18, anchor="center")
-        glow.lower()
-
-        logo = ctk.CTkLabel(
-            page, text="⏻", font=("Segoe UI", 52),
-            text_color=GOLD,
-        )
-        logo.pack(pady=(0, 4))
+        # Logo
+        try:
+            logo_img = Image.open(ASSETS_DIR / "logo_ui.png")
+            logo_img_large = logo_img.resize((160, 160), Image.LANCZOS)
+            self._welcome_logo = ImageTk.PhotoImage(logo_img_large)
+            logo_glow = ctk.CTkLabel(
+                page, text="", fg_color=GOLD, width=160, height=160,
+                corner_radius=80,
+            )
+            logo_glow.place(relx=0.5, rely=0.14, anchor="center")
+            logo_glow.lower()
+            logo = ctk.CTkLabel(
+                page, image=self._welcome_logo, text="",
+                fg_color="transparent",
+            )
+            logo.pack(pady=(0, 8))
+        except Exception:
+            logo = ctk.CTkLabel(
+                page, text="⏻", font=("Segoe UI", 52),
+                text_color=GOLD,
+            )
+            logo.pack(pady=(0, 4))
 
         title = ctk.CTkLabel(
             page, text="Parakram VPS",
@@ -337,7 +355,12 @@ class ParakramVPSInstaller(ctk.CTk):
                 fg_color=GOLD, text_color=BLACK, hover_color=GOLD_HOVER,
                 font=("Segoe UI", 14, "bold"), width=260, height=48,
             )
-            get_started.pack(pady=(0, 16))
+            get_started.pack(pady=(0, 8))
+
+            ctk.CTkLabel(
+                page, text="⚠ Requires Administrator privileges",
+                font=FONT_TINY, text_color="#5a3a3a",
+            ).pack(pady=(0, 8))
 
             # Feature badges
             features_frame = ctk.CTkFrame(page, fg_color="transparent")
@@ -689,6 +712,29 @@ class ParakramVPSInstaller(ctk.CTk):
                 row, text=desc, font=FONT_TINY, text_color=GRAY,
             ).pack(side="left", padx=(8, 0))
 
+        # ── Backup Configuration ───────────────────────────────────
+        bak_frame = self._config_section(page, "💾 Backup (restic, optional)", [
+            "Encrypted automated backups via restic. Leave blank to skip.",
+        ])
+        self._bak_entries: dict[str, ctk.CTkEntry] = {}
+        bak_fields = [
+            ("RESTIC_REPOSITORY", "Backup Destination (e.g. s3:s3.amazonaws.com/bucket)", ""),
+            ("RESTIC_PASSWORD", "Encryption Password (auto-generated if empty)", ""),
+        ]
+        for key, label, default in bak_fields:
+            row = ctk.CTkFrame(bak_frame, fg_color="transparent")
+            row.pack(fill="x", pady=2)
+            ctk.CTkLabel(row, text=label, font=FONT_SMALL, text_color=GRAY, width=180).pack(side="left")
+            entry = ctk.CTkEntry(
+                row, placeholder_text=default or "Enter value",
+                height=32, font=FONT_MONO,
+                show="•" if "PASSWORD" in key else "",
+            )
+            if default:
+                entry.insert(0, default)
+            entry.pack(side="left", fill="x", expand=True, padx=(0, 4))
+            self._bak_entries[key] = entry
+
         # ── Leads Backend Configuration ────────────────────────────
         leads_frame = self._config_section(page, "🤖 Leads Backend (optional)", [
             "Deploy the Parakram Leads Intelligence backend on this VPS.",
@@ -818,6 +864,13 @@ class ParakramVPSInstaller(ctk.CTk):
         from core.setup_engine import audit
         audit("LEADS_CONFIG", f"Leads config collected: {', '.join(k for k in leads_config if not any(s in k for s in ['PASSWORD', 'KEY', 'TOKEN', 'SECRET']))}", "INFO")
 
+        # ── Collect backup config ───────────────────────────────────────
+        if hasattr(self, "_bak_entries"):
+            for key, entry in self._bak_entries.items():
+                val = entry.get().strip()
+                if val:
+                    self._engine._config[key] = val
+
         def _do():
             try:
                 cf_token = self._cf_token_entry.get().strip() if hasattr(self, "_cf_token_entry") else ""
@@ -890,10 +943,11 @@ class ParakramVPSInstaller(ctk.CTk):
         self._step_statuses: dict[str, ctk.CTkLabel] = {}
         install_steps = [
             "Pre-flight Checks", "OpenSSH Server", "Management Dashboard",
-            "Cloudflare Tunnel", "Auto-Start", "Start Dashboard",
-            "Firewall Configuration", "Docker Desktop",
-            "Leads Backend Deployment", "Leads Tunnel Route",
-            "Post-Install Verification",
+            "Cloudflare Tunnel", "Caddy Reverse Proxy", "Restic Backup",
+            "Nebula Mesh VPN", "Auto-Start", "Start Dashboard",
+            "Start Caddy", "Start Nebula", "Firewall Configuration",
+            "Docker Desktop", "Leads Backend Deployment",
+            "Leads Tunnel Route", "Post-Install Verification",
         ]
         for step_name in install_steps:
             row = ctk.CTkFrame(self._steps_frame, fg_color="transparent")
@@ -957,15 +1011,15 @@ class ParakramVPSInstaller(ctk.CTk):
     def _on_install_done(self):
         """Installation completed successfully."""
         self._state = InstallState.COMPLETE
-        # Mark all steps as completed
         for step_name in self._step_statuses:
             self._step_statuses[step_name].configure(text="✓", text_color=GREEN)
         self._progress.set(1.0)
         self._status_label.configure(text="Installation complete!", text_color=GREEN)
         self._log_install("✓ All steps completed successfully")
         self._log_install("✓ Parakram VPS is now operational")
-        # Start heartbeat reporting to backend
         self._start_heartbeat()
+        dashboard_port = (self._install_result or {}).get("dashboard_port", 9876)
+        self.after(500, lambda: webbrowser.open(f"http://localhost:{dashboard_port}"))
         self.after(1000, lambda: self._show_page(4))
 
     def _on_install_failed(self):
@@ -1068,19 +1122,36 @@ class ParakramVPSInstaller(ctk.CTk):
         action_frame = ctk.CTkFrame(page, fg_color="transparent")
         action_frame.pack(pady=(8, 0))
 
-        ctk.CTkButton(
-            action_frame, text="Open Dashboard",
-            fg_color=GOLD, text_color=BLACK, hover_color=GOLD_HOVER,
-            font=("Segoe UI", 13, "bold"), width=200, height=42,
-            command=lambda: webbrowser.open(f"http://localhost:{dashboard_port}"),
-        ).pack(side="left", padx=6)
+        if not has_errors:
+            ctk.CTkButton(
+                action_frame, text="Dashboard opened in browser →",
+                fg_color="transparent", text_color=GOLD, hover_color=DARK,
+                font=FONT_SMALL, height=32,
+                command=lambda: webbrowser.open(f"http://localhost:{dashboard_port}"),
+            ).pack(pady=(0, 4))
 
         ctk.CTkButton(
-            action_frame, text="Finish",
-            fg_color=DARK, text_color=WHITE, hover_color=DARK_BORDER,
-            font=FONT_BODY, width=120, height=42,
+            action_frame, text="Close Installer",
+            fg_color=GOLD if has_errors else DARK,
+            text_color=BLACK if has_errors else WHITE,
+            hover_color=GOLD_HOVER if has_errors else DARK_BORDER,
+            font=("Segoe UI", 13, "bold") if has_errors else FONT_BODY,
+            width=200 if has_errors else 140,
+            height=44 if has_errors else 38,
             command=self._on_close,
-        ).pack(side="left", padx=6)
+        ).pack(pady=(4, 0))
+
+        if not has_errors:
+            ctk.CTkLabel(
+                action_frame,
+                text="VPS is running. Access dashboard anytime at:",
+                font=FONT_TINY, text_color="#3a3a3a",
+            ).pack(pady=(8, 0))
+            ctk.CTkLabel(
+                action_frame,
+                text=f"http://localhost:{dashboard_port}",
+                font=FONT_MONO, text_color=GOLD,
+            ).pack()
 
         return page
 

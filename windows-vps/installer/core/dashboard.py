@@ -147,6 +147,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex
         <tr><td>OpenSSH Server</td><td id="s-ssh"><span class="dot off"></span>Scanning...</td><td><button class="svc-btn" onclick="toggle('ssh')">Toggle</button></td></tr>
         <tr><td>Cloudflare Tunnel</td><td id="s-tun"><span class="dot off"></span>Scanning...</td><td><button class="svc-btn" onclick="toggle('tun')">Toggle</button></td></tr>
         <tr><td>Dashboard Server</td><td><span class="dot on"></span>Active</td><td>Port <span id="port-val">9876</span></td></tr>
+        <tr><td>Nebula Mesh VPN</td><td id="s-neb"><span class="dot off"></span>Scanning...</td><td><button class="svc-btn" onclick="toggle('neb')">Toggle</button></td></tr>
+        <tr><td>Backups (restic)</td><td id="s-bak"><span class="dot off"></span>Scanning...</td><td><button class="svc-btn" onclick="toggle('bak')">Run Now</button></td></tr>
         <tr><td>Leads Backend</td><td id="s-leads"><span class="dot off"></span>Scanning...</td><td><button class="svc-btn" onclick="toggle('leads')">Toggle</button></td></tr>
       </table>
     </div>
@@ -301,8 +303,11 @@ async function poll(){
     // Services
     var ssh=d.s===true||d.s==='true';
     var tun=d.t===true||d.t==='true';
+    var neb=d.neb===true||d.neb==='true';
     document.getElementById('s-ssh').innerHTML=ssh?'<span class="dot on"></span>Running':'<span class="dot off"></span>Stopped';
     document.getElementById('s-tun').innerHTML=tun?'<span class="dot on"></span>Connected':'<span class="dot off"></span>Disconnected';
+    document.getElementById('s-neb').innerHTML=neb?'<span class="dot on"></span>Connected':'<span class="dot off"></span>Stopped';
+    document.getElementById('s-bak').innerHTML=d.bak?'<span class="dot on"></span>Last: '+d.bak:'<span class="dot off"></span>Not configured';
     document.getElementById('port-val').textContent=d.p||'9876';
 
     // Network/Tunnel
@@ -388,9 +393,10 @@ async function restartAll(){
   try{
     await fetch('/a/t/ssh');
     await fetch('/a/t/tun');
+    await fetch('/a/t/neb');
     await fetch('/a/t/leads');
     setTimeout(function(){
-      toggle('ssh');toggle('tun');toggle('leads');
+      toggle('ssh');toggle('tun');toggle('neb');toggle('leads');
     },3000);
     addLog('All services restart initiated','ok');
   }catch(e){addLog('Restart failed: '+e.message,'error');}
@@ -457,7 +463,7 @@ param(
 $ErrorActionPreference = "Stop"
 $hostName = [System.Net.Dns]::GetHostName()
 $listener = New-Object System.Net.HttpListener
-$listener.Prefixes.Add("http://+:$Port/")
+$listener.Prefixes.Add("http://127.0.0.1:$Port/")
 $listener.Start()
 
 $startTime = Get-Date
@@ -505,8 +511,17 @@ while ($listener.IsListening -and $requestCount -lt $MaxRequests) {{
                 try {{ $sshRunning = (Get-Service sshd -ErrorAction SilentlyContinue).Status -eq 'Running' }}
                 catch {{ $sshRunning = $false }}
 
-                try {{ $tunRunning = (Get-Process cloudflared -ErrorAction SilentlyContinue) -ne $null }}
+                try {{ $tunRunning = [bool](Get-Process cloudflared -ErrorAction SilentlyContinue) }}
                 catch {{ $tunRunning = $false }}
+
+                try {{ $nebRunning = [bool](Get-Process nebula -ErrorAction SilentlyContinue) }}
+                catch {{ $nebRunning = $false }}
+
+                try {{
+                    $bakInfo = "na"
+                    $bakFile = Join-Path (Split-Path $HtmlDir -Parent) "restic" "last_backup.txt"
+                    if (Test-Path $bakFile) {{ $bakInfo = (Get-Content $bakFile -Raw).Trim() }}
+                }} catch {{ $bakInfo = "na" }}
 
                 try {{
                     $leadsDir = Join-Path (Split-Path $HtmlDir -Parent) "leads"
@@ -517,11 +532,7 @@ while ($listener.IsListening -and $requestCount -lt $MaxRequests) {{
                     }} else {{ $leadsStatus = "not_installed" }}
                 }} catch {{ $leadsStatus = "unknown" }}
 
-                $json = '{{"c":{0},"m":"{1}/{2} GB","d":"{3}/{4} GB","u":"{5}","s":{6},"t":{7},"p":{8},"l":"{9}"}}' -f
-                    $cpu, $memUsed, $memTotal, $diskUsed, $diskTotal, $uptime,
-                    ($sshRunning -eq $true).ToString().ToLower(),
-                    ($tunRunning -eq $true).ToString().ToLower(),
-                    $Port, $leadsStatus
+                $json = (@{{c=$cpu;m="$memUsed/$memTotal GB";d="$diskUsed/$diskTotal GB";u=$uptime;s=($sshRunning -eq $true);t=($tunRunning -eq $true);p=$Port;l=$leadsStatus;neb=($nebRunning -eq $true);bak=$bakInfo}} | ConvertTo-Json -Compress)
 
                 $buffer = [text.encoding]::UTF8.GetBytes($json)
                 $res.ContentType = 'application/json'
@@ -539,6 +550,24 @@ while ($listener.IsListening -and $requestCount -lt $MaxRequests) {{
                 else {{
                     $cfExe = Join-Path (Split-Path $HtmlDir -Parent) "cloudflared.exe"
                     if (Test-Path $cfExe) {{ Start-Process -FilePath $cfExe -WindowStyle Hidden -ArgumentList "tunnel run" }}
+                }}
+                $res.StatusCode = 200
+
+            }} elseif ($path -eq '/a/t/neb') {{
+                $proc = Get-Process nebula -ErrorAction SilentlyContinue
+                if ($proc) {{ $proc | Stop-Process -Force }}
+                else {{
+                    $nebExe = Join-Path (Split-Path $HtmlDir -Parent) "nebula" "nebula.exe"
+                    $nebCfg = Join-Path (Split-Path $HtmlDir -Parent) "nebula" "config.yml"
+                    if (Test-Path $nebExe) {{ Start-Process -FilePath $nebExe -WindowStyle Hidden -ArgumentList "-config","$nebCfg" }}
+                }}
+                $res.StatusCode = 200
+
+            }} elseif ($path -eq '/a/t/bak') {{
+                $resticExe = Join-Path (Split-Path $HtmlDir -Parent) "restic" "restic.exe"
+                $bakScript = Join-Path (Split-Path $HtmlDir -Parent) "restic" "backup.ps1"
+                if (Test-Path $resticExe -and (Test-Path $bakScript)) {{
+                    Start-Process -FilePath "powershell.exe" -WindowStyle Hidden -ArgumentList "-File","$bakScript"
                 }}
                 $res.StatusCode = 200
 
@@ -596,7 +625,7 @@ while ($listener.IsListening -and $requestCount -lt $MaxRequests) {{
                     $updateFile = Join-Path (Split-Path $HtmlDir -Parent) ".update_staging" "update_meta.json"
                     if (Test-Path $updateFile) {{
                         $meta = Get-Content $updateFile -Raw | ConvertFrom-Json
-                        $jsonOut = '{{"available":true,"version":"{0}","critical":{1}}}' -f $meta.version, ($meta.is_critical).ToString().ToLower()
+                        $jsonOut = (@{{available=$true;version=$meta.version;critical=[bool]$meta.is_critical}} | ConvertTo-Json -Compress)
                     }} else {{
                         $jsonOut = '{{"available":false}}'
                     }}
@@ -607,7 +636,7 @@ while ($listener.IsListening -and $requestCount -lt $MaxRequests) {{
 
             }} elseif ($path -eq '/a/h') {{
                 $elapsed = ((Get-Date) - $startTime).TotalSeconds
-                $jsonOut = '{{"status":"ok","uptime_seconds":{0},"requests":{1}}}' -f [int]$elapsed, $requestCount
+                $jsonOut = (@{{status="ok";uptime_seconds=[int]$elapsed;requests=$requestCount}} | ConvertTo-Json -Compress)
                 $buffer = [text.encoding]::UTF8.GetBytes($jsonOut)
                 $res.ContentType = 'application/json'
                 $res.OutputStream.Write($buffer, 0, $buffer.Length)
