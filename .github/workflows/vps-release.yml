@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: dashboard/package-lock.json
+          cache-dependency-path: windows-vps/dashboard/package-lock.json
 
       - name: Install WiX Toolset v7
         run: |
