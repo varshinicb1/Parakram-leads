@@ -2,8 +2,14 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 
 export interface Stats {
   m: string; d: string; u: string; p: number;
-  bak: string; t: boolean; s: boolean; neb: boolean;
-  c: number; l: string;
+  bak: string;
+  t: 'running' | 'stopped' | 'not_installed';
+  s: 'running' | 'stopped' | 'not_installed';
+  neb: 'running' | 'stopped' | 'not_installed';
+  caddy: 'running' | 'stopped' | 'not_installed';
+  restic: 'running' | 'stopped' | 'not_installed';
+  c: number;
+  l: 'running' | 'stopped' | 'not_installed';
 }
 
 const MAX_HISTORY = 60;

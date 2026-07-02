@@ -1,6 +1,4 @@
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
-import { cn } from '../lib/utils';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface MetricCardProps {
   label: string;
@@ -9,7 +7,6 @@ interface MetricCardProps {
   pct?: number;
   sparkline?: number[];
   icon?: React.ReactNode;
-  trend?: 'up' | 'down' | 'neutral';
 }
 
 function pctColor(p: number) {
@@ -18,9 +15,27 @@ function pctColor(p: number) {
   return 'var(--danger)';
 }
 
-export function MetricCard({ label, value, sub, pct = 0, sparkline, icon, trend }: MetricCardProps) {
-  const color = pct !== undefined ? pctColor(pct) : 'var(--accent)';
+function Skeleton() {
+  return (
+    <div className="rounded-[16px] border border-border bg-surface p-5">
+      <div className="flex items-center justify-between mb-3">
+        <div className="skeleton h-3 w-16" />
+        <div className="skeleton h-3 w-3" />
+      </div>
+      <div className="skeleton h-7 w-20 mb-2" />
+      <div className="skeleton h-3 w-28 mb-3" />
+      <div className="skeleton h-1.5 w-full rounded-full mb-3" />
+      <div className="skeleton h-10 w-full" />
+    </div>
+  );
+}
+
+export function MetricCard(props: MetricCardProps) {
+  const { label, value, sub, pct = 0, sparkline, icon } = props;
+  const color = pctColor(pct);
   const chartData = sparkline?.map((v, i) => ({ i, v })) ?? [];
+
+  if (value === '—' && !sparkline?.length) return <Skeleton />;
 
   return (
     <div className="group rounded-[16px] border border-border bg-surface p-5 transition-all duration-200 hover:shadow-sm hover:-translate-y-[1px]">
@@ -37,12 +52,6 @@ export function MetricCard({ label, value, sub, pct = 0, sparkline, icon, trend 
         <span className="text-2xl font-semibold text-text-primary tabular-nums tracking-tight">
           {value}
         </span>
-        {trend === 'up' && (
-          <TrendingUp className="h-3.5 w-3.5 text-success" strokeWidth={2.5} />
-        )}
-        {trend === 'down' && (
-          <TrendingDown className="h-3.5 w-3.5 text-danger" strokeWidth={2.5} />
-        )}
       </div>
 
       {sub && (
@@ -87,3 +96,5 @@ export function MetricCard({ label, value, sub, pct = 0, sparkline, icon, trend 
     </div>
   );
 }
+
+export { MetricCard as MetricCardSkeleton };

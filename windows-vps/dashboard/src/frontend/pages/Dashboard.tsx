@@ -9,15 +9,18 @@ import { RefreshCw, ExternalLink, Download, Cpu, MemoryStick, HardDrive, Clock, 
 export function Dashboard() {
   const { stats, connected, history, memPct, logs, addLog, refresh } = useStats();
 
-  const memUsage = stats ? memPct : 0;
   const diskPct = stats
     ? ((parseFloat(stats.d.match(/^([\d.]+)/)?.[1] || '0') /
         parseFloat(stats.d.match(/\/\s*([\d.]+)/)?.[1] || '1')) * 100)
     : 0;
 
   const handleToggle = async (svc: string) => {
-    await fetch(`/a/t/${svc}`);
-    addLog(`Toggled: ${svc}`);
+    try {
+      await fetch(`/a/t/${svc}`);
+      addLog(`Toggled: ${svc}`);
+    } catch {
+      addLog(`✗ Failed to toggle: ${svc}`);
+    }
     setTimeout(refresh, 1500);
   };
 
@@ -25,7 +28,7 @@ export function Dashboard() {
     <>
       <TopBar connected={connected} hostname={window.location.hostname} />
       <div className="flex-1 overflow-y-auto">
-        <div className="px-6 py-6">
+        <div className="px-6 py-6 animate-in">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-lg font-semibold text-text-primary tracking-tight">Overview</h1>
@@ -48,7 +51,7 @@ export function Dashboard() {
               label="CPU"
               value={stats ? `${stats.c.toFixed(0)}%` : '—'}
               sub="utilization"
-              pct={stats?.c || 0}
+              pct={stats?.c ?? 0}
               sparkline={history.cpu}
               icon={<Cpu className="h-3.5 w-3.5" strokeWidth={1.5} />}
             />
@@ -56,7 +59,7 @@ export function Dashboard() {
               label="Memory"
               value={stats ? `${memPct.toFixed(0)}%` : '—'}
               sub={stats?.m?.replace('GB', ' GB') || '—'}
-              pct={memUsage}
+              pct={stats ? memPct : 0}
               sparkline={history.mem}
               icon={<MemoryStick className="h-3.5 w-3.5" strokeWidth={1.5} />}
             />
@@ -75,8 +78,8 @@ export function Dashboard() {
             />
             <MetricCard
               label="Network"
-              value={stats?.t ? 'Active' : 'Offline'}
-              sub={stats?.t ? 'tunnel connected' : 'tunnel disconnected'}
+              value={stats?.t ? 'Active' : '—'}
+              sub={stats?.t ? 'tunnel connected' : '—'}
               icon={<Network className="h-3.5 w-3.5" strokeWidth={1.5} />}
             />
           </div>

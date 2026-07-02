@@ -1,52 +1,70 @@
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Play, Square, RefreshCw, ExternalLink } from 'lucide-react';
-
-interface Stats {
-  m: string; d: string; u: string; p: number;
-  bak: string; t: boolean; s: boolean; neb: boolean;
-  c: number; l: string;
-}
+import { Play, Square, RefreshCw } from 'lucide-react';
+import type { Stats } from '../hooks/use-stats';
 
 interface ServicesTableProps {
   stats: Stats | null;
   onToggle: (svc: string) => void;
 }
 
+type ServiceStatus = 'running' | 'stopped' | 'not_installed' | 'checking';
+
 const services = [
   { key: 'ssh', label: 'OpenSSH Server', desc: 'Remote shell access' },
   { key: 'tun', label: 'Cloudflare Tunnel', desc: 'Public HTTPS ingress' },
-  { key: 'neb', label: 'Nebula Mesh VPN', desc: 'Peer-to-peer overlay' },
-  { key: 'caddy', label: 'Caddy', desc: 'Reverse proxy & TLS' },
-  { key: 'restic', label: 'Backups (restic)', desc: 'Automated snapshots' },
+  { key: 'neb', label: 'Nebula Mesh VPN', desc: 'Peer-to-peer overlay network' },
+  { key: 'caddy', label: 'Caddy', desc: 'Reverse proxy with auto TLS' },
+  { key: 'restic', label: 'Backups (restic)', desc: 'Automated encrypted snapshots' },
   { key: 'leads', label: 'Leads Backend', desc: 'Lead intelligence API' },
 ];
 
+function badgeFromStatus(st: ServiceStatus): { variant: 'running' | 'stopped' | 'pending' | 'neutral' | 'info'; text: string } {
+  switch (st) {
+    case 'running': return { variant: 'running', text: 'Running' };
+    case 'stopped': return { variant: 'stopped', text: 'Stopped' };
+    case 'not_installed': return { variant: 'neutral', text: 'Not Installed' };
+    case 'checking': return { variant: 'pending', text: 'Checking...' };
+  }
+}
+
+function Skeleton() {
+  return (
+    <div className="rounded-[16px] border border-border bg-surface overflow-hidden flex flex-col">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="skeleton h-4 w-20" />
+        <div className="skeleton h-4 w-16" />
+      </div>
+      <div className="p-6 space-y-4">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="skeleton h-4 w-32" />
+              <div className="skeleton h-3 w-24" />
+            </div>
+            <div className="skeleton h-6 w-20 rounded-[8px]" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ServicesTable({ stats, onToggle }: ServicesTableProps) {
-  const getStatus = (key: string) => {
-    if (!stats) return { variant: 'pending' as const, text: 'Scanning...' };
+  const getStatus = (key: string): ServiceStatus => {
+    if (!stats) return 'checking';
     switch (key) {
-      case 'ssh': return stats.s
-        ? { variant: 'running' as const, text: 'Running' }
-        : { variant: 'stopped' as const, text: 'Stopped' };
-      case 'tun': return stats.t
-        ? { variant: 'running' as const, text: 'Connected' }
-        : { variant: 'stopped' as const, text: 'Disconnected' };
-      case 'neb': return stats.neb
-        ? { variant: 'running' as const, text: 'Connected' }
-        : { variant: 'stopped' as const, text: 'Stopped' };
-      case 'caddy': return { variant: 'pending' as const, text: 'Checking...' };
-      case 'restic': return stats.bak && stats.bak !== 'na'
-        ? { variant: 'info' as const, text: `Last: ${stats.bak}` }
-        : { variant: 'neutral' as const, text: 'Not configured' };
-      case 'leads':
-        if (stats.l === 'running') return { variant: 'running' as const, text: 'Running' };
-        if (stats.l === 'starting') return { variant: 'pending' as const, text: 'Starting...' };
-        if (stats.l === 'not_installed') return { variant: 'neutral' as const, text: 'Not Installed' };
-        return { variant: 'stopped' as const, text: stats.l };
-      default: return { variant: 'neutral' as const, text: 'Unknown' };
+      case 'ssh': return stats.s;
+      case 'tun': return stats.t;
+      case 'neb': return stats.neb;
+      case 'caddy': return stats.caddy ?? 'checking';
+      case 'restic': return stats.restic ?? 'checking';
+      case 'leads': return stats.l;
+      default: return 'not_installed';
     }
   };
+
+  if (!stats) return <Skeleton />;
 
   return (
     <div className="rounded-[16px] border border-border bg-surface overflow-hidden flex flex-col">
@@ -64,9 +82,10 @@ export function ServicesTable({ stats, onToggle }: ServicesTableProps) {
             </tr>
           </thead>
           <tbody>
-            {services.map(({ key, label, desc }, i) => {
-              const st = getStatus(key);
+            {services.map(({ key, label, desc }) => {
+              const st = badgeFromStatus(getStatus(key));
               const isRunning = st.variant === 'running';
+              const isNotInstalled = st.variant === 'neutral';
               return (
                 <tr
                   key={key}
@@ -82,20 +101,22 @@ export function ServicesTable({ stats, onToggle }: ServicesTableProps) {
                     <Badge variant={st.variant} dot>{st.text}</Badge>
                   </td>
                   <td className="px-6 py-3.5 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onToggle(key)}
-                    >
-                      {key === 'restic' ? (
-                        <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.5} />
-                      ) : isRunning ? (
-                        <Square className="h-3.5 w-3.5" strokeWidth={1.5} />
-                      ) : (
-                        <Play className="h-3.5 w-3.5" strokeWidth={1.5} />
-                      )}
-                      {key === 'restic' ? 'Run' : isRunning ? 'Stop' : 'Start'}
-                    </Button>
+                    {!isNotInstalled && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onToggle(key)}
+                      >
+                        {key === 'restic' ? (
+                          <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.5} />
+                        ) : isRunning ? (
+                          <Square className="h-3.5 w-3.5" strokeWidth={1.5} />
+                        ) : (
+                          <Play className="h-3.5 w-3.5" strokeWidth={1.5} />
+                        )}
+                        {key === 'restic' ? 'Run' : isRunning ? 'Stop' : 'Start'}
+                      </Button>
+                    )}
                   </td>
                 </tr>
               );

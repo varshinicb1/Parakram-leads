@@ -25,9 +25,11 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 z-30 flex h-screen w-56 flex-col border-r border-border bg-sidebar-bg">
       <div className="flex h-14 items-center gap-3 px-5 border-b border-border">
-        <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-accent shadow-sm">
-          <span className="text-[11px] font-bold text-white tracking-tight">J</span>
-        </div>
+        <img
+          src="/branding/icon.png"
+          alt="Jalebi VPS"
+          className="h-7 w-7 shrink-0 rounded-[8px] object-cover"
+        />
         <div className="flex flex-col leading-none">
           <span className="text-sm font-semibold text-text-primary tracking-tight">Jalebi VPS</span>
           <span className="text-[10px] text-text-muted font-medium tracking-wide">Mission Control</span>
@@ -54,7 +56,7 @@ export function Sidebar() {
                 {isActive && (
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-accent shadow-sm shadow-accent/50" />
                 )}
-                <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                <Icon className="h-5 w-5 shrink-0" strokeWidth={1.5} />
                 <span>{label}</span>
               </>
             )}
