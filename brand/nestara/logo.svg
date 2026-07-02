@@ -1,0 +1,24 @@
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nestara logo — a golden nest cradling a star, on black">
+  <title>Nestara</title>
+  <desc>Minimalist mark: two soft interlocking nest strokes in gold cradling a small four-point star, on a black circular badge.</desc>
+
+  <circle cx="120" cy="120" r="118" fill="#070708" stroke="#c9a96e" stroke-width="1.5" stroke-opacity="0.35"/>
+
+  <!-- Nest: two soft overlapping crescent strokes -->
+  <path d="M 55 138 Q 120 190 185 138"
+        fill="none" stroke="#c9a96e" stroke-width="7" stroke-linecap="round" opacity="0.9"/>
+  <path d="M 68 118 Q 120 158 172 118"
+        fill="none" stroke="#c9a96e" stroke-width="7" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- Small star cradled in the nest -->
+  <g transform="translate(120 88)">
+    <path d="M 0 -22 C 3 -7 7 -3 22 0 C 7 3 3 7 0 22 C -3 7 -7 3 -22 0 C -7 -3 -3 -7 0 -22 Z"
+          fill="#e8c98f"/>
+    <circle cx="0" cy="0" r="3.5" fill="#070708"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="120" y="222" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif" font-size="22"
+        letter-spacing="6" fill="#e8e6e3">NESTARA</text>
+</svg>

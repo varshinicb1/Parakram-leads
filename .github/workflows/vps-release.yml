@@ -38,24 +38,31 @@ jobs:
           wix eula accept wix7
 
       - name: Install npm dependencies
+        working-directory: windows-vps/dashboard
         run: npm ci --ignore-scripts
 
       - name: Build React frontend
+        working-directory: windows-vps/dashboard
         run: npm run build
 
       - name: Bundle Node.js backend
+        working-directory: windows-vps/dashboard
         run: node scripts/bundle-backend.mjs
 
       - name: Download Node.js runtime
+        working-directory: windows-vps/dashboard
         run: node scripts/download-node.mjs
 
       - name: Download cloudflared
+        working-directory: windows-vps/dashboard
         run: node scripts/download-cloudflared.mjs
 
       - name: Download WinSW (service wrapper)
+        working-directory: windows-vps/dashboard
         run: node scripts/download-winsw.mjs
 
       - name: Generate WiX file list
+        shell: pwsh
         run: .\scripts\generate-wxs.ps1
 
       - name: Build WiX MSI
