@@ -1,4 +1,4 @@
-"""Tests for the VPS telemetry + auto-update API."""
+﻿"""Tests for the VPS telemetry + auto-update API."""
 
 import os
 import sys
@@ -70,20 +70,20 @@ class TestVersionHelpers:
 
 class TestAssetHelpers:
     def test_windows_match(self):
-        assert _platform_matches("ParakramVPS-Setup-2.1.0.exe", "windows") is True
+        assert _platform_matches("JalebiVPS-Setup-2.1.0.exe", "windows") is True
 
     def test_windows_no_match_linux(self):
-        assert _platform_matches("parakram-vps-linux-x64.tar.gz", "windows") is False
+        assert _platform_matches("jalebi-vps-linux-x64.tar.gz", "windows") is False
 
     def test_linux_match_targz(self):
-        assert _platform_matches("parakram-vps-linux-x64.tar.gz", "linux") is True
+        assert _platform_matches("jalebi-vps-linux-x64.tar.gz", "linux") is True
 
     def test_linux_match_deb(self):
-        assert _platform_matches("parakram-vps_2.1.0_amd64.deb", "linux") is True
+        assert _platform_matches("jalebi-vps_2.1.0_amd64.deb", "linux") is True
 
     def test_sha_from_checksums(self):
-        text = f"{SHA}  parakram-vps-linux-x64.tar.gz\n{'b'*64}  other.zip"
-        assert _sha256_from_checksums(text, "parakram-vps-linux-x64.tar.gz") == SHA
+        text = f"{SHA}  jalebi-vps-linux-x64.tar.gz\n{'b'*64}  other.zip"
+        assert _sha256_from_checksums(text, "jalebi-vps-linux-x64.tar.gz") == SHA
 
     def test_sha_from_checksums_missing(self):
         assert _sha256_from_checksums("nothing here", "x.exe") == ""
@@ -214,7 +214,7 @@ class TestUpdatesEndpoint:
 
     async def test_no_update_when_not_newer(self):
         release = _release(tag="2.0.0", assets=[
-            {"name": "ParakramVPS-Setup-2.0.0.exe", "browser_download_url": "u", "size": 10},
+            {"name": "JalebiVPS-Setup-2.0.0.exe", "browser_download_url": "u", "size": 10},
         ])
         with patch("httpx.AsyncClient", return_value=_mock_github(release)):
             app = build_app()
@@ -226,9 +226,9 @@ class TestUpdatesEndpoint:
         assert resp.json()["update_available"] is False
 
     async def test_windows_update_available(self):
-        body = f"Release notes\nSHA256: {SHA}  ParakramVPS-Setup-2.1.0.exe"
+        body = f"Release notes\nSHA256: {SHA}  JalebiVPS-Setup-2.1.0.exe"
         release = _release(tag="v2.1.0", body=body, assets=[
-            {"name": "ParakramVPS-Setup-2.1.0.exe", "browser_download_url": "https://dl/exe", "size": 999},
+            {"name": "JalebiVPS-Setup-2.1.0.exe", "browser_download_url": "https://dl/exe", "size": 999},
         ])
         with patch("httpx.AsyncClient", return_value=_mock_github(release)):
             app = build_app()
@@ -245,8 +245,8 @@ class TestUpdatesEndpoint:
 
     async def test_linux_update_picks_linux_asset(self):
         release = _release(tag="2.1.0", assets=[
-            {"name": "ParakramVPS-Setup-2.1.0.exe", "browser_download_url": "win", "size": 1},
-            {"name": "parakram-vps-linux-x64.tar.gz", "browser_download_url": "lin", "size": 2},
+            {"name": "JalebiVPS-Setup-2.1.0.exe", "browser_download_url": "win", "size": 1},
+            {"name": "jalebi-vps-linux-x64.tar.gz", "browser_download_url": "lin", "size": 2},
         ])
         with patch("httpx.AsyncClient", return_value=_mock_github(release)):
             app = build_app()

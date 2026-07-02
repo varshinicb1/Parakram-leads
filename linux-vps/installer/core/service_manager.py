@@ -1,4 +1,4 @@
-"""systemd service helpers for Linux VPS."""
+﻿"""systemd service helpers for Linux VPS."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from .config import PATHS
 
 
 SERVICE_TEMPLATE = """[Unit]
-Description=Parakram VPS
+Description=Jalebi VPS
 After=network-online.target
 Wants=network-online.target
 
@@ -46,7 +46,7 @@ def enable_service(unit_file: Path) -> subprocess.CompletedProcess:
     return systemctl("restart", unit_file.name)
 
 
-def disable_service(unit_name: str = "parakram-vps.service") -> subprocess.CompletedProcess:
+def disable_service(unit_name: str = "jalebi-vps.service") -> subprocess.CompletedProcess:
     systemctl("stop", unit_name)
     systemctl("disable", unit_name)
     return systemctl("daemon-reload")

@@ -1,4 +1,4 @@
-name: VPS Release
+﻿name: VPS Release
 
 on:
   workflow_dispatch:
@@ -68,8 +68,8 @@ jobs:
       - name: Build WiX MSI
         run: |
           $version = "${{ github.event.inputs.version || github.ref_name }}"
-          wix build wix\ParakramVPS.wxs wix\GeneratedFiles.wxs `
-            -out dist\ParakramVPS-$version.msi `
+          wix build wix\JalebiVPS.wxs wix\GeneratedFiles.wxs `
+            -out dist\JalebiVPS-$version.msi `
             -bindpath dashboard\dist `
             -arch x64
 
@@ -88,7 +88,7 @@ jobs:
           [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:VPS_CODESIGN_PFX_BASE64))
           $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
             Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1 -ExpandProperty FullName
-          $msi = Get-Item dist\ParakramVPS-*.msi | Select-Object -First 1
+          $msi = Get-Item dist\JalebiVPS-*.msi | Select-Object -First 1
           & $signtool sign /f $pfxPath /p $env:VPS_CODESIGN_PASSWORD /fd SHA256 `
             /tr http://timestamp.digicert.com /td SHA256 $msi.FullName
           if ($LASTEXITCODE -ne 0) { throw "signtool failed with exit code $LASTEXITCODE" }
@@ -99,7 +99,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          $msi = Get-Item dist\ParakramVPS-*.msi | Select-Object -First 1
+          $msi = Get-Item dist\JalebiVPS-*.msi | Select-Object -First 1
           $ilog = "$env:RUNNER_TEMP\install.log"
           Start-Process msiexec.exe -ArgumentList "/i", "`"$($msi.FullName)`"", "/qn", "/l*v", "`"$ilog`"" -Wait
           if (-not (Select-String -Path $ilog -Pattern "Installation success" -Quiet)) {
@@ -108,9 +108,9 @@ jobs:
           }
 
           Start-Sleep -Seconds 3
-          $svc = Get-Service ParakramVPS -ErrorAction SilentlyContinue
+          $svc = Get-Service JalebiVPS -ErrorAction SilentlyContinue
           if (-not $svc -or $svc.Status -ne "Running") {
-            throw "ParakramVPS service is not running after install (status: $($svc.Status))"
+            throw "JalebiVPS service is not running after install (status: $($svc.Status))"
           }
 
           $resp = Invoke-WebRequest -Uri "http://127.0.0.1:9876" -UseBasicParsing -TimeoutSec 10
@@ -128,8 +128,8 @@ jobs:
             throw "MSI uninstall failed on clean runner"
           }
           Start-Sleep -Seconds 3
-          if (Test-Path "C:\Program Files\ParakramVPS") { throw "Install directory was not removed on uninstall" }
-          if (Get-Service ParakramVPS -ErrorAction SilentlyContinue) { throw "Service still registered after uninstall" }
+          if (Test-Path "C:\Program Files\JalebiVPS") { throw "Install directory was not removed on uninstall" }
+          if (Get-Service JalebiVPS -ErrorAction SilentlyContinue) { throw "Service still registered after uninstall" }
           Write-Host "✓ Uninstall verified clean"
 
       - name: Upload Windows MSI
@@ -181,8 +181,8 @@ jobs:
         run: |
           set -e
           mkdir -p out
-          cp release-artifacts/windows-vps-msi/ParakramVPS-*.msi out/
-          cp release-artifacts/linux-vps/parakram-vps-linux-x64-*.tar.gz out/
+          cp release-artifacts/windows-vps-msi/JalebiVPS-*.msi out/
+          cp release-artifacts/linux-vps/jalebi-vps-linux-x64-*.tar.gz out/
           cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
 
       - name: Create release notes
@@ -190,15 +190,15 @@ jobs:
           VERSION: ${{ github.event.inputs.version || github.ref_name }}
         run: |
           cat > release-notes.md <<EOF
-          # Parakram VPS ${VERSION}
+          # JALEBI VPS ${VERSION}
 
           Turn any Windows laptop or Linux box into a managed edge VPS — one install, auto-update, live heartbeat to the Parakram fleet dashboard.
 
           ## Downloads
           | Platform | Asset | Notes |
           |----------|-------|-------|
-          | Windows 10/11 (x64) | \`ParakramVPS-${VERSION}.msi\` | Code-signed with a self-signed cert — Windows SmartScreen may still prompt on first run. See note below. |
-          | Linux (Ubuntu/Debian x64) | \`parakram-vps-linux-x64-${VERSION}.tar.gz\` | Extract and run \`sudo ./install.sh\`. |
+          | Windows 10/11 (x64) | \`JalebiVPS-${VERSION}.msi\` | Code-signed with a self-signed cert — Windows SmartScreen may still prompt on first run. See note below. |
+          | Linux (Ubuntu/Debian x64) | \`jalebi-vps-linux-x64-${VERSION}.tar.gz\` | Extract and run \`sudo ./install.sh\`. |
 
           Verify your download against \`SHA256SUMS.txt\`.
 
@@ -213,14 +213,14 @@ jobs:
           - Or right-click → Properties → **Unblock** checkbox
 
           ## Windows install
-          1. Download \`ParakramVPS-${VERSION}.msi\`.
+          1. Download \`JalebiVPS-${VERSION}.msi\`.
           2. Double-click to launch the installer wizard.
           3. Follow the setup. The app auto-updates from future releases.
 
           ## Linux install
           \`\`\`bash
-          tar -xzf parakram-vps-linux-x64-${VERSION}.tar.gz
-          cd parakram-vps-linux-${VERSION}
+          tar -xzf jalebi-vps-linux-x64-${VERSION}.tar.gz
+          cd jalebi-vps-linux-${VERSION}
           sudo ./install.sh
           \`\`\`
 

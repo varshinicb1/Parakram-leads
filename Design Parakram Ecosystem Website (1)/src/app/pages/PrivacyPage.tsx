@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import SectionLabel from "../components/SectionLabel";
 
@@ -6,7 +6,7 @@ export default function PrivacyPage() {
   const sections = [
     {
       title: "Information We Collect",
-      content: "We collect information you provide directly: name, email, phone number, company details when you sign up or contact us. We also collect usage data (pages visited, features used) to improve our services. When you use Parakram VPS, we collect system metrics (CPU, memory, disk usage, uptime) to monitor and maintain your instance.",
+      content: "We collect information you provide directly: name, email, phone number, company details when you sign up or contact us. We also collect usage data (pages visited, features used) to improve our services. When you use Jalebi VPS, we collect system metrics (CPU, memory, disk usage, uptime) to monitor and maintain your instance.",
     },
     {
       title: "How We Use Your Information",

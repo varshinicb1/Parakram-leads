@@ -1,11 +1,11 @@
-param(
+﻿param(
   [string]$OutputDir = (Join-Path $PSScriptRoot "dist")
 )
 
 $ErrorActionPreference = "Stop"
 $start = Get-Date
 
-Write-Host "=== Parakram VPS Build v3.0.0 ===" -ForegroundColor Cyan
+Write-Host "=== JALEBI VPS Build v3.0.0 ===" -ForegroundColor Cyan
 Write-Host ""
 
 # Step 1: Install npm deps (if needed)
@@ -50,12 +50,12 @@ try {
   Write-Host "  ✓ cloudflared ready ($((Get-Item 'dist/runtime/cloudflared.exe').Length / 1MB) MB)" -ForegroundColor Green
 
   # Step 4c: Download WinSW (wraps the Node backend as a real Windows service)
-  if (-not (Test-Path "dist/runtime/ParakramVPS-svc.exe")) {
+  if (-not (Test-Path "dist/runtime/JalebiVPS-svc.exe")) {
     Write-Host "[4c/6] Downloading WinSW..." -ForegroundColor Yellow
     node scripts/download-winsw.mjs 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "WinSW download failed" }
   }
-  Write-Host "  ✓ WinSW ready ($((Get-Item 'dist/runtime/ParakramVPS-svc.exe').Length / 1MB) MB)" -ForegroundColor Green
+  Write-Host "  ✓ WinSW ready ($((Get-Item 'dist/runtime/JalebiVPS-svc.exe').Length / 1MB) MB)" -ForegroundColor Green
 }
 finally { Pop-Location }
 
@@ -67,9 +67,9 @@ Write-Host "  ✓ File list generated" -ForegroundColor Green
 # Step 6: Build MSI
 Write-Host "[6/6] Building WiX MSI installer..." -ForegroundColor Yellow
 New-Item -ItemType Directory -Path $distDir -Force | Out-Null
-$msiPath = Join-Path $distDir "ParakramVPS.msi"
+$msiPath = Join-Path $distDir "JalebiVPS.msi"
 
-wix build (Join-Path $wixDir "ParakramVPS.wxs") `
+wix build (Join-Path $wixDir "JalebiVPS.wxs") `
   (Join-Path $wixDir "GeneratedFiles.wxs") `
   -out $msiPath `
   -bindpath (Join-Path $dashDir "dist") `

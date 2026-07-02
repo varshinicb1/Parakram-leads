@@ -1,10 +1,10 @@
-# Parakram VPS — Provisioning Script
+﻿# JALEBI VPS — Provisioning Script
 # Runs as a deferred, elevated MSI custom action during install.
 # Idempotent: safe to re-run on repair/upgrade. Never aborts the MSI on
 # a non-critical failure — degrades gracefully and logs everything.
 
 $ErrorActionPreference = "Continue"
-$logDir = Join-Path $env:ProgramData "ParakramVPS"
+$logDir = Join-Path $env:ProgramData "JalebiVPS"
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 $logFile = Join-Path $logDir "provision.log"
 
@@ -73,8 +73,8 @@ try {
 try {
     Start-Service -Name MpsSvc -ErrorAction SilentlyContinue
     $rules = @(
-        @{ Name = "Parakram VPS Dashboard"; Port = 9876 },
-        @{ Name = "Parakram VPS SSH"; Port = 22 }
+        @{ Name = "JALEBI VPS Dashboard"; Port = 9876 },
+        @{ Name = "JALEBI VPS SSH"; Port = 22 }
     )
     foreach ($rule in $rules) {
         Remove-NetFirewallRule -DisplayName $rule.Name -ErrorAction SilentlyContinue

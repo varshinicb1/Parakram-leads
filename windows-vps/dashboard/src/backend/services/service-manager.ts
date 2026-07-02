@@ -20,9 +20,9 @@ const serviceNames: Record<string, string> = {
   ssh: 'sshd',
   tun: 'cloudflared',
   neb: 'nebula',
-  caddy: 'ParakramCaddy',
-  restic: 'ParakramRestic',
-  leads: 'ParakramLeads',
+  caddy: 'JalebiCaddy',
+  restic: 'JalebiRestic',
+  leads: 'JalebiLeads',
 };
 
 export async function toggleService(name: string): Promise<{ ok: boolean; service: string; status?: string }> {

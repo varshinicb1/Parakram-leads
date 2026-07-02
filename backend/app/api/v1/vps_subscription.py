@@ -1,5 +1,5 @@
-"""
-PARAKRAM VPS — SUBSCRIPTION API (Military/Space Grade)
+﻿"""
+Jalebi VPS — SUBSCRIPTION API (Military/Space Grade)
 ========================================================
 Classification: CONTROLLED / FINANCIAL-SYSTEM
 Criticality: CRITICAL — handles payment processing and license management

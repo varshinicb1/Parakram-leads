@@ -1,10 +1,10 @@
-# Parakram VPS — Stability & Clean-Install Design
+﻿# JALEBI VPS — Stability & Clean-Install Design
 
 ## Context
-Parakram VPS (`windows-vps/`) turns a Windows machine into a self-hosted server (OpenSSH + Cloudflare Tunnel + dashboard + optional Leads backend hosting via Docker Compose). Git history shows a pattern of reactive firefighting: a silent `KeyError` crash on EXE startup, antivirus false-positives on the PyInstaller build (worked around by switching to WiX MSI), broken signup/signin API paths, and a UTF-8/cp1252 crash in the build script. Test coverage is ~17% (20 of ~115 Python files). This is a portfolio project — the goal is a genuinely reliable one-click installer, not real subscription revenue.
+JALEBI VPS (`windows-vps/`) turns a Windows machine into a self-hosted server (OpenSSH + Cloudflare Tunnel + dashboard + optional Leads backend hosting via Docker Compose). Git history shows a pattern of reactive firefighting: a silent `KeyError` crash on EXE startup, antivirus false-positives on the PyInstaller build (worked around by switching to WiX MSI), broken signup/signin API paths, and a UTF-8/cp1252 crash in the build script. Test coverage is ~17% (20 of ~115 Python files). This is a portfolio project — the goal is a genuinely reliable one-click installer, not real subscription revenue.
 
 ## Goal
-On a **clean Windows 10/11 VM with nothing pre-installed**, running `ParakramVPS-Setup.msi` produces a working local dashboard (`http://localhost:9876`), a working SSH connection, and (optionally) a Cloudflare Tunnel URL — with zero manual intervention and zero antivirus quarantine — every time, not just on the developer's machine.
+On a **clean Windows 10/11 VM with nothing pre-installed**, running `JalebiVPS-Setup.msi` produces a working local dashboard (`http://localhost:9876`), a working SSH connection, and (optionally) a Cloudflare Tunnel URL — with zero manual intervention and zero antivirus quarantine — every time, not just on the developer's machine.
 
 ## Non-Goals
 - Real Razorpay billing enforcement, real customer support flows

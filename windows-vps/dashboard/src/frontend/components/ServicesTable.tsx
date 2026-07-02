@@ -1,3 +1,7 @@
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Play, Square, RefreshCw, ExternalLink } from 'lucide-react';
+
 interface Stats {
   m: string; d: string; u: string; p: number;
   bak: string; t: boolean; s: boolean; neb: boolean;
@@ -10,63 +14,88 @@ interface ServicesTableProps {
 }
 
 const services = [
-  { key: 'ssh', label: 'OpenSSH Server' },
-  { key: 'tun', label: 'Cloudflare Tunnel' },
-  { key: 'neb', label: 'Nebula Mesh VPN' },
-  { key: 'caddy', label: 'Caddy Reverse Proxy' },
-  { key: 'restic', label: 'Backups (restic)' },
-  { key: 'leads', label: 'Leads Backend' },
+  { key: 'ssh', label: 'OpenSSH Server', desc: 'Remote shell access' },
+  { key: 'tun', label: 'Cloudflare Tunnel', desc: 'Public HTTPS ingress' },
+  { key: 'neb', label: 'Nebula Mesh VPN', desc: 'Peer-to-peer overlay' },
+  { key: 'caddy', label: 'Caddy', desc: 'Reverse proxy & TLS' },
+  { key: 'restic', label: 'Backups (restic)', desc: 'Automated snapshots' },
+  { key: 'leads', label: 'Leads Backend', desc: 'Lead intelligence API' },
 ];
 
 export function ServicesTable({ stats, onToggle }: ServicesTableProps) {
   const getStatus = (key: string) => {
-    if (!stats) return { on: false, text: 'Scanning...' };
+    if (!stats) return { variant: 'pending' as const, text: 'Scanning...' };
     switch (key) {
-      case 'ssh': return stats.s ? { on: true, text: 'Running' } : { on: false, text: 'Stopped' };
-      case 'tun': return stats.t ? { on: true, text: 'Connected' } : { on: false, text: 'Disconnected' };
-      case 'neb': return stats.neb ? { on: true, text: 'Connected' } : { on: false, text: 'Stopped' };
-      case 'caddy': return { on: false, text: 'Checking...' };
+      case 'ssh': return stats.s
+        ? { variant: 'running' as const, text: 'Running' }
+        : { variant: 'stopped' as const, text: 'Stopped' };
+      case 'tun': return stats.t
+        ? { variant: 'running' as const, text: 'Connected' }
+        : { variant: 'stopped' as const, text: 'Disconnected' };
+      case 'neb': return stats.neb
+        ? { variant: 'running' as const, text: 'Connected' }
+        : { variant: 'stopped' as const, text: 'Stopped' };
+      case 'caddy': return { variant: 'pending' as const, text: 'Checking...' };
       case 'restic': return stats.bak && stats.bak !== 'na'
-        ? { on: true, text: `Last: ${stats.bak}` }
-        : { on: false, text: 'Not configured' };
+        ? { variant: 'info' as const, text: `Last: ${stats.bak}` }
+        : { variant: 'neutral' as const, text: 'Not configured' };
       case 'leads':
-        if (stats.l === 'running') return { on: true, text: 'Running' };
-        if (stats.l === 'starting') return { on: false, text: 'Starting...' };
-        if (stats.l === 'not_installed') return { on: false, text: 'Not Installed' };
-        return { on: false, text: stats.l };
-      default: return { on: false, text: 'Unknown' };
+        if (stats.l === 'running') return { variant: 'running' as const, text: 'Running' };
+        if (stats.l === 'starting') return { variant: 'pending' as const, text: 'Starting...' };
+        if (stats.l === 'not_installed') return { variant: 'neutral' as const, text: 'Not Installed' };
+        return { variant: 'stopped' as const, text: stats.l };
+      default: return { variant: 'neutral' as const, text: 'Unknown' };
     }
   };
 
   return (
-    <div className="bg-[#0d0d0e] border border-[rgba(255,255,255,0.06)] rounded-lg overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(255,255,255,0.06)] shrink-0">
-        <h3 className="text-[11px] text-[#5a5a5a] uppercase tracking-widest">Services</h3>
+    <div className="rounded-[16px] border border-border bg-surface overflow-hidden flex flex-col">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.12em]">Services</h3>
+        <span className="text-[11px] text-text-muted tabular-nums">{services.length} services</span>
       </div>
       <div className="flex-1 overflow-y-auto">
-        <table className="w-full text-xs border-collapse">
+        <table className="w-full border-collapse">
           <thead>
-            <tr className="text-[10px] text-[#5a5a5a] uppercase tracking-wider">
-              <th className="text-left px-4 py-2 font-normal">Service</th>
-              <th className="text-left px-4 py-2 font-normal">Status</th>
-              <th className="text-left px-4 py-2 font-normal">Action</th>
+            <tr className="border-b border-border">
+              <th className="text-left px-6 py-3 text-[11px] font-medium text-text-muted uppercase tracking-[0.08em]">Service</th>
+              <th className="text-left px-6 py-3 text-[11px] font-medium text-text-muted uppercase tracking-[0.08em]">Status</th>
+              <th className="text-right px-6 py-3 text-[11px] font-medium text-text-muted uppercase tracking-[0.08em]">Action</th>
             </tr>
           </thead>
           <tbody>
-            {services.map(({ key, label }) => {
+            {services.map(({ key, label, desc }, i) => {
               const st = getStatus(key);
+              const isRunning = st.variant === 'running';
               return (
-                <tr key={key} className="border-t border-[rgba(255,255,255,0.06)]">
-                  <td className="px-4 py-2.5">{label}</td>
-                  <td className="px-4 py-2.5">
-                    <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${st.on ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]' : 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]'}`} />
-                    {st.text}
+                <tr
+                  key={key}
+                  className="group border-b border-border/50 last:border-b-0 transition-colors hover:bg-hover/50"
+                >
+                  <td className="px-6 py-3.5">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-text-primary">{label}</span>
+                      <span className="text-xs text-text-muted mt-0.5">{desc}</span>
+                    </div>
                   </td>
-                  <td className="px-4 py-2.5">
-                    <button onClick={() => onToggle(key)}
-                      className="px-2.5 py-1 rounded text-[10px] border border-[rgba(255,255,255,0.06)] bg-[#141416] text-[#8a8a8a] hover:border-[#c9a96e] hover:text-[#e8e6e3] transition-all cursor-pointer">
-                      {key === 'restic' ? 'Run Now' : 'Toggle'}
-                    </button>
+                  <td className="px-6 py-3.5">
+                    <Badge variant={st.variant} dot>{st.text}</Badge>
+                  </td>
+                  <td className="px-6 py-3.5 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onToggle(key)}
+                    >
+                      {key === 'restic' ? (
+                        <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      ) : isRunning ? (
+                        <Square className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      ) : (
+                        <Play className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      )}
+                      {key === 'restic' ? 'Run' : isRunning ? 'Stop' : 'Start'}
+                    </Button>
                   </td>
                 </tr>
               );

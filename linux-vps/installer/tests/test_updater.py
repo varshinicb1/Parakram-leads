@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -25,7 +25,7 @@ def test_check_for_update_from_github(tmp_path):
         "tag_name": "v2.1.0",
         "body": "Release notes",
         "published_at": "2026-01-01T00:00:00Z",
-        "assets": [{"name": "parakram-vps-linux-x64.tar.gz", "browser_download_url": "https://example.com/a", "size": 10}],
+        "assets": [{"name": "jalebi-vps-linux-x64.tar.gz", "browser_download_url": "https://example.com/a", "size": 10}],
     }
     resp = MagicMock(status_code=200)
     resp.json.return_value = release

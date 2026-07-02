@@ -1,17 +1,17 @@
-# Parakram VPS — installs and starts the dashboard Windows service via WinSW.
+﻿# JALEBI VPS — installs and starts the dashboard Windows service via WinSW.
 # Run as a deferred, elevated MSI custom action from the DASHBOARD_DIR.
 #
 # A plain Node.js/Express process cannot be registered directly with
 # `sc create` — Windows services must speak the Service Control Manager
 # handshake, which Node does not implement. WinSW (bundled as
-# ParakramVPS-svc.exe + ParakramVPS-svc.xml) wraps the Node process and
+# JalebiVPS-svc.exe + JalebiVPS-svc.xml) wraps the Node process and
 # speaks that protocol for us.
 
 $ErrorActionPreference = "Continue"
 $dir = $PSScriptRoot
-$svc = Join-Path $dir "ParakramVPS-svc.exe"
+$svc = Join-Path $dir "JalebiVPS-svc.exe"
 
-$logDir = Join-Path $env:ProgramData "ParakramVPS"
+$logDir = Join-Path $env:ProgramData "JalebiVPS"
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 $logFile = Join-Path $logDir "install-service.log"
 function Write-Log([string]$msg) {
@@ -38,7 +38,7 @@ function Run-Capture([string]$exe, [string]$argString) {
 Write-Log "=== install-service.ps1 started ==="
 Write-Log "WinSW=$svc dir=$dir"
 
-$existingExit = Run-Capture "sc.exe" "query ParakramVPS"
+$existingExit = Run-Capture "sc.exe" "query JalebiVPS"
 if ($existingExit -eq 0) {
     Write-Log "Service exists; stopping and uninstalling before recreate"
     Run-Capture $svc "stop" | Out-Null
@@ -52,8 +52,8 @@ Start-Sleep -Seconds 1
 $startExit = Run-Capture $svc "start"
 Write-Log "Service start exit=$startExit"
 
-Remove-NetFirewallRule -DisplayName "Parakram VPS Dashboard" -ErrorAction SilentlyContinue
-New-NetFirewallRule -DisplayName "Parakram VPS Dashboard" -Direction Inbound -Protocol TCP `
+Remove-NetFirewallRule -DisplayName "JALEBI VPS Dashboard" -ErrorAction SilentlyContinue
+New-NetFirewallRule -DisplayName "JALEBI VPS Dashboard" -Direction Inbound -Protocol TCP `
     -LocalPort 9876 -Action Allow -Profile Any -ErrorAction SilentlyContinue | Out-Null
 
 Write-Log "=== install-service.ps1 complete ==="

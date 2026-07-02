@@ -1,4 +1,4 @@
-# -*- mode: python ; coding: utf-8 -*-
+﻿# -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
 datas = [('windows-vps/installer/assets', 'assets'), ('windows-vps/installer/core', 'core'), ('windows-vps/installer/theme.py', '.')]
@@ -29,7 +29,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='ParakramVPS-Setup',
+    name='JalebiVPS-Setup',
     debug=False,
     bootloader_ignore_signals=False,
     strip=True,

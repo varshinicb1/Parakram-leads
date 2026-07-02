@@ -1,4 +1,4 @@
-# Sigma Lead Intelligence — Multi-Billion Dollar Product Vision
+﻿# Sigma Lead Intelligence — Multi-Billion Dollar Product Vision
 
 ## Executive Summary
 
@@ -537,13 +537,13 @@ The agent runs automatically on Celery Beat every 8 hours (at :30 past the hour)
 
 ---
 
-## Parakram VPS for Windows — Edge Computing Product
+## Jalebi VPS for Windows — Edge Computing Product
 
 Turn any Windows laptop into a production-ready VPS with one click. No port forwarding, no static IP, no cloud bills.
 
 ### The Insight
 
-Every Windows laptop is a dormant server. Parakram VPS wakes it up — installing OpenSSH, configuring Cloudflare Tunnel for zero-config public access, adding a management dashboard, and setting up auto-start on boot. The result: a free VPS hiding inside every Windows machine.
+Every Windows laptop is a dormant server. Jalebi VPS wakes it up — installing OpenSSH, configuring Cloudflare Tunnel for zero-config public access, adding a management dashboard, and setting up auto-start on boot. The result: a free VPS hiding inside every Windows machine.
 
 ### How It Works
 
@@ -585,7 +585,7 @@ Windows Laptop
 ### Viral Distribution
 
 The installer itself is the distribution channel:
-1. User needs a VPS → downloads Parakram VPS
+1. User needs a VPS → downloads Jalebi VPS
 2. Runs the 30-second installer
 3. Gets a working VPS with a public URL
 4. Tells their friends → they install too
@@ -593,7 +593,7 @@ The installer itself is the distribution channel:
 
 ### Competitive Advantage
 
-| vs | Parakram VPS | AWS EC2 | DigitalOcean | ngrok |
+| vs | Jalebi VPS | AWS EC2 | DigitalOcean | ngrok |
 |---|-------------|---------|-------------|-------|
 | **Cost** | Free (your hardware) | $5+/mo | $4+/mo | Free tier limited |
 | **Setup** | 30 seconds | 15 minutes | 10 minutes | 2 minutes |
@@ -603,12 +603,12 @@ The installer itself is the distribution channel:
 
 ---
 
-## Parakram VPS — Personal Windows VPS Product
+## Jalebi VPS — Personal Windows VPS Product
 
 Turn any Windows laptop into a production-ready VPS with one-click installation. No port forwarding, no static IP, no cloud bills.
 
 ### Overview
-Parakram VPS transforms Windows machines into secure, accessible virtual servers using:
+Jalebi VPS transforms Windows machines into secure, accessible virtual servers using:
 - **OpenSSH Server** for remote shell access
 - **Cloudflare Tunnel** for public HTTPS URLs (zero open firewall ports)
 - **Web-based Management Dashboard** for real-time monitoring
@@ -635,7 +635,7 @@ Windows Laptop
 ```
 
 ### Product Flow
-1. **Download & Run**: User downloads `ParakramVPS-Setup.exe` and runs as Administrator
+1. **Download & Run**: User downloads `JalebiVPS-Setup.exe` and runs as Administrator
 2. **Welcome Screen**: Apple-style introduction with animated logo
 3. **Account Creation**: Email/password or Google Sign-In (with WhatsApp alert on signup)
 4. **Configuration**: 

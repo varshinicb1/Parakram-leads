@@ -1,4 +1,4 @@
-"""Linux VPS agent entrypoint."""
+﻿"""Linux VPS agent entrypoint."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 CONFIG_FILE = PATHS.config_dir / "config.json"
-SERVICE_FILE = PATHS.install_dir / "parakram-vps.service"
+SERVICE_FILE = PATHS.install_dir / "jalebi-vps.service"
 ENTRYPOINT = Path(__file__).resolve()
 
 
@@ -81,7 +81,7 @@ def install() -> int:
     write_service_file(SERVICE_FILE, "/usr/bin/python3", ENTRYPOINT)
     save_config(config)
     enable_service(SERVICE_FILE)
-    logger.info("Installed Parakram VPS Linux service at %s", SERVICE_FILE)
+    logger.info("Installed Jalebi VPS Linux service at %s", SERVICE_FILE)
     return 0
 
 

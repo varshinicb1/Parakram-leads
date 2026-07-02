@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'fs';
+﻿import { mkdirSync, writeFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -22,11 +22,11 @@ async function main() {
     throw new Error('Downloaded file is not a valid Windows executable (bad MZ header)');
   }
 
-  const outPath = resolve(outDir, 'ParakramVPS-svc.exe');
+  const outPath = resolve(outDir, 'JalebiVPS-svc.exe');
   writeFileSync(outPath, buffer);
 
   const size = (buffer.length / 1024 / 1024).toFixed(1);
-  console.log(`✓ Downloaded WinSW (${size} MB) to dist/runtime/ParakramVPS-svc.exe`);
+  console.log(`✓ Downloaded WinSW (${size} MB) to dist/runtime/JalebiVPS-svc.exe`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

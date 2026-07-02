@@ -1,8 +1,8 @@
-#requires -RunAsAdministrator
+﻿#requires -RunAsAdministrator
 
 <#
 .SYNOPSIS
-    Parakram VPS — Turns any Windows machine into a production-ready VPS in minutes.
+    JALEBI VPS — Turns any Windows machine into a production-ready VPS in minutes.
 .DESCRIPTION
     One-click setup that installs and configures:
     - OpenSSH Server (remote shell access)
@@ -17,12 +17,12 @@
 #>
 
 $ErrorActionPreference = "Stop"
-$Host.UI.RawUI.WindowTitle = "Parakram VPS - Setup"
+$Host.UI.RawUI.WindowTitle = "JALEBI VPS - Setup"
 
 # -- Config -----------------------------------------------------------------
 $VERSION = "1.1.0"
-$LOG_FILE = "$env:USERPROFILE\parakram-vps-install.log"
-$INSTALL_DIR = "$env:ProgramFiles\ParakramVPS"
+$LOG_FILE = "$env:USERPROFILE\jalebi-vps-install.log"
+$INSTALL_DIR = "$env:ProgramFiles\JalebiVPS"
 $DASHBOARD_PORT = 9876
 $TUNNEL_NAME = "windows-vps-$([System.Environment]::MachineName.ToLower())"
 
@@ -152,7 +152,7 @@ $dashboardHtml = @'
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Parakram VPS</title>
+<title>JALEBI VPS</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:#070708;color:#e8e6e3;font-family:'Segoe UI',system-ui,sans-serif;padding:24px}
@@ -177,7 +177,7 @@ $dashboardHtml = @'
 </style>
 </head>
 <body>
-<div class="hdr"><h1>Parakram VPS</h1><span id="hostname"></span></div>
+<div class="hdr"><h1>JALEBI VPS</h1><span id="hostname"></span></div>
 
 <div class="grid" id="s">
   <div class="c"><h3>CPU</h3><div class="v" id="cpu">-</div><div class="s">usage</div></div>
@@ -227,7 +227,7 @@ r();setInterval(r,5000);
 $dashboardHtml | Set-Content -Path "$dashboardDir\index.html" -Force -Encoding UTF8
 
 $serverScript = @'
-# Parakram VPS - Dashboard HTTP Server
+# JALEBI VPS - Dashboard HTTP Server
 # Run: powershell -ExecutionPolicy Bypass -File dashboard-server.ps1
 
 $port = __PORT__
@@ -236,7 +236,7 @@ $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://+:$port/")
 $listener.Start()
 
-Write-Host ("Parakram VPS Dashboard running on http://localhost:$port")
+Write-Host ("JALEBI VPS Dashboard running on http://localhost:$port")
 
 while ($listener.IsListening) {
     $ctx = $listener.GetContext()
@@ -303,13 +303,13 @@ Write-Success "Dashboard created"
 # -- 4. Create Startup Script & Schedule -----------------------------------
 Write-Step "Configuring Auto-Start"
 
-$taskName = "ParakramVPS-Dashboard"
+$taskName = "JalebiVPS-Dashboard"
 $existing = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
 if (-not $existing) {
     $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$dashboardDir\dashboard-server.ps1`""
     $trigger = New-ScheduledTaskTrigger -AtStartup
     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "Parakram VPS Management Dashboard" | Out-Null
+    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Description "JALEBI VPS Management Dashboard" | Out-Null
     Write-Success "Auto-start configured (Task Scheduler)"
 } else {
     Write-Info "Auto-start already configured"
@@ -325,7 +325,7 @@ try {
 # -- 5. Configure Firewall -------------------------------------------------
 Write-Step "Configuring Windows Firewall"
 
-$fwRuleName = "Parakram VPS Dashboard"
+$fwRuleName = "JALEBI VPS Dashboard"
 $existing = Get-NetFirewallRule -DisplayName $fwRuleName -ErrorAction SilentlyContinue
 if (-not $existing) {
     New-NetFirewallRule -DisplayName $fwRuleName -Direction Inbound -Protocol TCP -LocalPort $DASHBOARD_PORT -Action Allow | Out-Null
@@ -342,7 +342,7 @@ $localIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAl
 # -- Summary ---------------------------------------------------------------
 Write-Host ""
 Write-Host "==============================" -ForegroundColor Green
-Write-Host " PARAKRAM VPS - INSTALLED" -ForegroundColor Green
+Write-Host " JALEBI VPS - INSTALLED" -ForegroundColor Green
 Write-Host "==============================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  LOCAL ACCESS" -ForegroundColor Cyan

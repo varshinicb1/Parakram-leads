@@ -1,10 +1,10 @@
-# Parakram VPS — Deprovisioning Script
+﻿# JALEBI VPS — Deprovisioning Script
 # Runs as a deferred, elevated MSI custom action during uninstall.
 # Only removes what we added (firewall rules). Leaves OpenSSH Server
 # installed since it's a general Windows capability, not exclusively ours.
 
 $ErrorActionPreference = "Continue"
-$logDir = Join-Path $env:ProgramData "ParakramVPS"
+$logDir = Join-Path $env:ProgramData "JalebiVPS"
 $logFile = Join-Path $logDir "provision.log"
 
 function Write-Log([string]$msg) {
@@ -14,7 +14,7 @@ function Write-Log([string]$msg) {
 
 Write-Log "=== Deprovisioning started ==="
 
-foreach ($name in @("Parakram VPS Dashboard", "Parakram VPS SSH")) {
+foreach ($name in @("JALEBI VPS Dashboard", "JALEBI VPS SSH")) {
     Remove-NetFirewallRule -DisplayName $name -ErrorAction SilentlyContinue
 }
 Write-Log "Firewall rules removed"

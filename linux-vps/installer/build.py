@@ -1,4 +1,4 @@
-"""Build script for the Linux VPS release bundle."""
+﻿"""Build script for the Linux VPS release bundle."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ def sha256(path: Path) -> str:
 
 def build_bundle(version: str) -> Path:
     DIST.mkdir(parents=True, exist_ok=True)
-    bundle_root = DIST / f"parakram-vps-linux-{version}"
+    bundle_root = DIST / f"jalebi-vps-linux-{version}"
     if bundle_root.exists():
         shutil.rmtree(bundle_root)
     bundle_root.mkdir()
@@ -34,7 +34,7 @@ def build_bundle(version: str) -> Path:
         shutil.copy2(ROOT / rel, bundle_root / rel)
     shutil.copytree(ROOT / "core", bundle_root / "core")
 
-    archive = DIST / f"parakram-vps-linux-x64-{version}.tar.gz"
+    archive = DIST / f"jalebi-vps-linux-x64-{version}.tar.gz"
     with tarfile.open(archive, "w:gz") as tar:
         tar.add(bundle_root, arcname=bundle_root.name)
 

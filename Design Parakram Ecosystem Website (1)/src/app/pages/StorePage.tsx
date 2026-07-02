@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import SectionLabel from "../components/SectionLabel";
 import Panel from "../components/Panel";
@@ -61,7 +61,7 @@ const PRODUCTS = [
   {
     category: "infra",
     id: "vps",
-    name: "Parakram VPS",
+    name: "Jalebi VPS",
     tagline: "Windows → VPS in 30 Seconds",
     icon: Laptop,
     status: "BETA",

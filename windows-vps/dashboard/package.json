@@ -1,8 +1,8 @@
 {
-  "name": "parakram-vps",
+  "name": "jalebi-vps",
   "version": "3.0.0",
   "private": true,
-  "description": "Parakram VPS — Windows VPS Management Dashboard",
+  "description": "JALEBI VPS — Windows VPS Management Dashboard",
   "type": "module",
   "scripts": {
     "dev": "vite",

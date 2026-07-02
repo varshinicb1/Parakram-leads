@@ -1,4 +1,4 @@
-# PARAKRAM — VISION & OPERATIONS
+﻿# PARAKRAM — VISION & OPERATIONS
 
 ```
 CLASSIFICATION: OPEN — READ BY EVERY HUMAN AND AI EMPLOYEE
@@ -20,7 +20,7 @@ We are not a single-product company. We are a **product studio** — each produc
 | Product | Status | Revenue Model | Target Market |
 |---------|--------|---------------|---------------|
 | **Parakram Leads** | LIVE (v0.2.1) | SaaS ($0–$399/mo) | Indian SMBs, agencies |
-| **Parakram VPS** | LIVE (v3.0.0) | Freemium ($0–$49/mo) | Developers, devops |
+| **JALEBI VPS** | LIVE (v3.0.0) | Freemium ($0–$49/mo) | Developers, devops |
 | **Parakram Edge** | Building (72%) | One-time + subscription | Android power users |
 | **Parakram Research** | R&D (35%) | SaaS subscription | Academics, researchers |
 | **Digital Scorecard** | Building | Freemium ($0–₹999) | SMB owners, agencies |
@@ -143,7 +143,7 @@ When working on Leads:
 
 ---
 
-### 2.2 Parakram VPS
+### 2.2 JALEBI VPS
 
 **Status:** LIVE (v3.0.0) — MSI installer verified end-to-end, CI pipeline, signed releases
 **Domain:** *.getparakram.in (via Cloudflare Tunnel)
@@ -163,14 +163,14 @@ windows-vps/
 │   ├── scripts/           → Build bundlers, download scripts for runtime assets
 │   └── package.json       → v3.0.0, React 19, Tailwind v4, Radix UI
 ├── wix/                   → WiX v7 installer source
-│   ├── ParakramVPS.wxs    → Main installer definition (features, components, UI)
+│   ├── JalebiVPS.wxs    → Main installer definition (features, components, UI)
 │   ├── GeneratedFiles.wxs → Auto-generated dashboard file manifest
 │   ├── provision.ps1      → OpenSSH + firewall + cloudflared provisioning
 │   ├── install-service.ps1 → WinSW service creation
-│   └── ParakramVPS-svc.xml → WinSW service config
+│   └── JalebiVPS-svc.xml → WinSW service config
 ├── scripts/               → Build helpers (download-node, download-cloudflared, download-winsw)
 ├── build.ps1              → Master build script (downloads + bundles + WiX compile)
-├── dist/                  → Build output (ParakramVPS.msi)
+├── dist/                  → Build output (JalebiVPS.msi)
 ├── installer/             → OLD Python prototype (dead code for v3 — kept as reference)
 ├── setup-vps.ps1          → Standalone PowerShell automation (legacy)
 └── setup.bat              → Double-click entry point (legacy)
@@ -183,11 +183,11 @@ windows-vps/
 
 #### AI Agent Instructions
 When working on VPS:
-1. The MSI is built with WiX v7 — `wix\ParakramVPS.wxs` is the main entry point
+1. The MSI is built with WiX v7 — `wix\JalebiVPS.wxs` is the main entry point
 2. Dashboard files are auto-discovered by `scripts/generate-wxs.ps1` into `GeneratedFiles.wxs`
 3. Frontend assets go to `FRONTEND_DIR`, hashed JS/CSS assets go to `ASSETS_DIR`
 4. The dashboard is a React 19 SPA (Vite) with an Express 5 API backend (TypeScript)
-5. The backend runs as a Windows service via WinSW (`ParakramVPS-svc.exe`)
+5. The backend runs as a Windows service via WinSW (`JalebiVPS-svc.exe`)
 6. Provisioning is done by `wix/provision.ps1` (OpenSSH, firewall, cloudflared binary)
 7. `build.ps1` orchestrates: download runtimes → npm build → bundle backend → wix build
 8. Build-time downloads (Node, cloudflared, WinSW) are cached in `dashboard/dist/runtime/`
@@ -381,7 +381,7 @@ A retro arcade Easter egg on the brand site featuring "Parakram's Quest" — a t
 
 #### What It Does
 A global decentralized compute network where:
-- **Node Operators** (anyone with a laptop) install Parakram VPS → earn money hosting workloads
+- **Node Operators** (anyone with a laptop) install JALEBI VPS → earn money hosting workloads
 - **Tenants** (developers, startups) get compute at 5–10x cheaper than AWS/DO
 - **Parakram** takes a 15–20% platform fee
 
@@ -402,7 +402,7 @@ A global decentralized compute network where:
 - **Escrow payments** — release to operator only after workload health confirmed
 
 #### Go-To-Market
-1. **Parakram VPS** → node operators install for their own use (existing product)
+1. **JALEBI VPS** → node operators install for their own use (existing product)
 2. **Deploy-Leads** → first paid workload (proof tenant demand exists)
 3. **Open registry** → node operators opt into marketplace
 4. **API launch** → tenants deploy containers via API
@@ -468,7 +468,7 @@ The store is a SPA route on the brand site at `getparakram.in/store`, implemente
 getparakram.in/store
 ├── (page)              → Product catalog — all products listed vertically
 │   ├── Parakram Leads  → SaaS subscription tiers
-│   ├── Parakram VPS    → Windows VPS installer tiers
+│   ├── JALEBI VPS    → Windows VPS installer tiers
 │   ├── Parakram Edge   → Android app (early access)
 │   ├── Parakram Research → Research automation (early access)
 │   ├── Digital Scorecard → Viral audit tool (free + pro)
@@ -664,7 +664,7 @@ You are an AI agent assigned to one of the teams in section 1.2. Your work must 
 
 ### 7.1 North Star Metric
 
-**Active Hosts** — laptops running Parakram VPS with healthy containers.
+**Active Hosts** — laptops running JALEBI VPS with healthy containers.
 
 ### 7.2 Product-Specific OKRs
 
@@ -689,7 +689,7 @@ You are an AI agent assigned to one of the teams in section 1.2. Your work must 
 
 ### 8.1 Near-Term (Next 3 Months)
 
-- [ ] Parakram VPS deploy-leads fully tested and documented
+- [ ] JALEBI VPS deploy-leads fully tested and documented
 - [ ] Store page on getparakram.in listing all products
 - [ ] Parakram Edge Android beta release
 - [ ] Parakram Research v0.1 (paper scraping pipeline)
@@ -737,7 +737,7 @@ pnpm build                    # Build brand site
 | Celery tasks | `backend/app/workers/*.py` |
 | Frontend pages | `frontend/src/app/*/page.tsx` |
 | Brand site pages | `Design Parakram Ecosystem Website (1)/src/app/pages/*.tsx` |
-| VPS installer (WiX) | `windows-vps/wix/ParakramVPS.wxs` |
+| VPS installer (WiX) | `windows-vps/wix/JalebiVPS.wxs` |
 | VPS dashboard | `windows-vps/dashboard/src/` |
 | VPS build script | `windows-vps/build.ps1` |
 | CI/CD configs | `.github/workflows/` |

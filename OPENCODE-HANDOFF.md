@@ -1,4 +1,4 @@
-# OPENCODE HANDOFF — Parakram VPS: finish demo-readiness
+﻿# OPENCODE HANDOFF — JALEBI VPS: finish demo-readiness
 
 > Audience: an AI coding agent (opencode / DeepSeek) picking up this repo cold.
 > Repo: `varshinicb1/Parakram-leads` (default branch: **`main`** — was `master`, consolidated as part of this session).
@@ -11,13 +11,13 @@
 
 ## 1. Context — what already happened (do NOT redo)
 
-The Parakram VPS Windows installer (`windows-vps/`) was broken end-to-end and has been fixed
+The JALEBI VPS Windows installer (`windows-vps/`) was broken end-to-end and has been fixed
 and **verified by real `msiexec /i` installs on this machine**. Fixed, merged (PRs #1–#3) and
 on `master` already:
 
 1. **`sc create` custom action was malformed** → replaced with `wix/install-service.ps1`.
 2. **Raw Node can't be a Windows service** (SCM handshake) → bundled **WinSW** as
-   `ParakramVPS-svc.exe` + `wix/ParakramVPS-svc.xml`. Key gotcha already fixed:
+   `JalebiVPS-svc.exe` + `wix/JalebiVPS-svc.xml`. Key gotcha already fixed:
    `<arguments>` must be `"%BASE%\backend.cjs"` (quoted — "Program Files" has a space,
    unquoted it becomes `Cannot find module 'C:\Program'`).
 3. **No machine provisioning existed** → `wix/provision.ps1` / `wix/deprovision.ps1`
@@ -31,9 +31,9 @@ on `master` already:
    Also fixed: `cache-dependency-path` must be repo-root-relative
    (`windows-vps/dashboard/package-lock.json`) — every earlier run died in 35s on this.
 
-**Machine state right now**: Parakram VPS 3.0.0 IS installed and running on this laptop
-(service `ParakramVPS` RUNNING, dashboard at `http://127.0.0.1:9876`, sshd RUNNING).
-Useful for screenshots; uninstall via `msiexec /x windows-vps\dist\ParakramVPS.msi /qn` if needed.
+**Machine state right now**: JALEBI VPS 3.0.0 IS installed and running on this laptop
+(service `JalebiVPS` RUNNING, dashboard at `http://127.0.0.1:9876`, sshd RUNNING).
+Useful for screenshots; uninstall via `msiexec /x windows-vps\dist\JalebiVPS.msi /qn` if needed.
 
 ---
 
@@ -43,7 +43,7 @@ The blank-dashboard fix was committed (b7cbc51), `GeneratedFiles.wxs` regenerate
 and pushed to `origin/main`. See commit `b7cbc51`.
 
 - `windows-vps/scripts/generate-wxs.ps1`
-- `windows-vps/wix/ParakramVPS.wxs`
+- `windows-vps/wix/JalebiVPS.wxs`
 
 **The bug**: the WXS generator computed `ASSETS_DIR` vs `FRONTEND_DIR` per file but then dumped
 *every* file into `FRONTEND_DIR`. So `/assets/index-*.js` 404'd, Express's SPA fallback served
@@ -56,7 +56,7 @@ and pushed to `origin/main`. See commit `b7cbc51`.
 assets serve with correct MIME types). It just was never committed.
 
 ```bash
-git add windows-vps/scripts/generate-wxs.ps1 windows-vps/wix/ParakramVPS.wxs
+git add windows-vps/scripts/generate-wxs.ps1 windows-vps/wix/JalebiVPS.wxs
 git commit -m "fix(vps): route hashed JS/CSS into ASSETS_DIR so the dashboard actually renders"
 git push origin master
 ```
@@ -87,7 +87,7 @@ failed pre-build (cache path bug, now fixed).
 git tag v3.0.0 && git push origin v3.0.0        # triggers vps-release.yml
 gh run watch --repo varshinicb1/Parakram-leads   # windows-msi job includes the smoke test
 ```
-Acceptance: release page has `ParakramVPS-v3.0.0.msi` (signed), `parakram-vps-linux-x64-*.tar.gz`,
+Acceptance: release page has `JalebiVPS-v3.0.0.msi` (signed), `jalebi-vps-linux-x64-*.tar.gz`,
 `SHA256SUMS.txt`. ⚠️ The Linux job (`linux-vps/installer/build.py`) has NEVER run successfully in
 CI — it may fail; if it does, fix or temporarily drop it from `needs:` so the Windows release ships.
 ⚠️ The smoke test asserts sshd starts — GitHub `windows-latest` runners generally have the OpenSSH
@@ -115,23 +115,23 @@ CI deploy workflow paths if you do).
 
 ```powershell
 # Full build (repo root /windows-vps). Downloads are cached in dashboard/dist/runtime/.
-cd windows-vps; .\build.ps1                     # → dist\ParakramVPS.msi (~40 MB)
+cd windows-vps; .\build.ps1                     # → dist\JalebiVPS.msi (~40 MB)
 
 # Manual wix build (after build.ps1 has populated dist/)
-wix build wix\ParakramVPS.wxs wix\GeneratedFiles.wxs -out dist\ParakramVPS.msi -bindpath dashboard\dist -arch x64
+wix build wix\JalebiVPS.wxs wix\GeneratedFiles.wxs -out dist\JalebiVPS.msi -bindpath dashboard\dist -arch x64
 
 # Install / verify / uninstall (elevated)
-msiexec /i dist\ParakramVPS.msi /qn /l*v %TEMP%\pvps.log
-sc query ParakramVPS                             # expect RUNNING
+msiexec /i dist\JalebiVPS.msi /qn /l*v %TEMP%\pvps.log
+sc query JalebiVPS                             # expect RUNNING
 curl http://127.0.0.1:9876/a/s                   # expect JSON stats
-msiexec /x dist\ParakramVPS.msi /qn              # expect zero leftovers in "C:\Program Files\ParakramVPS"
+msiexec /x dist\JalebiVPS.msi /qn              # expect zero leftovers in "C:\Program Files\JalebiVPS"
 ```
 
 Logs that tell you what went wrong:
 - MSI verbose log (`/l*v`) — grep `Installation success` / `Return value 3` / `error code 1639`
-- `%ProgramData%\ParakramVPS\install-service.log` — service create/start (from install-service.ps1)
-- `%ProgramData%\ParakramVPS\provision.log` — OpenSSH/firewall provisioning
-- `C:\Program Files\ParakramVPS\dashboard\ParakramVPS-svc.err.log` — Node process stderr (WinSW)
+- `%ProgramData%\JalebiVPS\install-service.log` — service create/start (from install-service.ps1)
+- `%ProgramData%\JalebiVPS\provision.log` — OpenSSH/firewall provisioning
+- `C:\Program Files\JalebiVPS\dashboard\JalebiVPS-svc.err.log` — Node process stderr (WinSW)
 
 ---
 

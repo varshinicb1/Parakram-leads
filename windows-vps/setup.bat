@@ -1,5 +1,5 @@
-@echo off
-title Parakram VPS — Setup
+﻿@echo off
+title JALEBI VPS — Setup
 cd /d "%~dp0"
 
 :: Check admin rights
@@ -11,7 +11,7 @@ if %errorLevel% neq 0 (
 )
 
 echo.
-echo  Starting Parakram VPS setup...
+echo  Starting JALEBI VPS setup...
 echo.
 
 :: Launch the PowerShell setup

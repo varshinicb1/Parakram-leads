@@ -1,5 +1,5 @@
-"""
-PARAKRAM VPS — TELEMETRY & UPDATES API
+﻿"""
+Jalebi VPS — TELEMETRY & UPDATES API
 ========================================
 Server side of the VPS-for-Windows/Linux client features:
 

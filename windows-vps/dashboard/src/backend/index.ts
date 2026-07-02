@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import { apiRouter } from './routes/api.js';
 import path from 'path';
@@ -28,5 +28,5 @@ if (frontendDist) {
 }
 
 app.listen(PORT, '127.0.0.1', () => {
-  console.log(`Parakram VPS Dashboard running on http://127.0.0.1:${PORT}`);
+  console.log(`JALEBI VPS Dashboard running on http://127.0.0.1:${PORT}`);
 });

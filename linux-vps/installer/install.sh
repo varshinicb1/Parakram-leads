@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 set -euo pipefail
 
-INSTALL_DIR="${PARAKRAM_VPS_INSTALL_DIR:-/opt/parakram-vps}"
-SERVICE_FILE="/etc/systemd/system/parakram-vps.service"
+INSTALL_DIR="${JALEBI_VPS_INSTALL_DIR:-/opt/jalebi-vps}"
+SERVICE_FILE="/etc/systemd/system/jalebi-vps.service"
 PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
 
 mkdir -p "$INSTALL_DIR"
@@ -12,7 +12,7 @@ cp "$(dirname "$0")"/requirements.txt "$INSTALL_DIR"/requirements.txt
 
 cat > "$SERVICE_FILE" <<EOF
 [Unit]
-Description=Parakram VPS
+Description=Jalebi VPS
 After=network-online.target
 Wants=network-online.target
 
@@ -28,5 +28,5 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable parakram-vps.service
-systemctl restart parakram-vps.service
+systemctl enable jalebi-vps.service
+systemctl restart jalebi-vps.service

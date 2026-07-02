@@ -1,4 +1,4 @@
-# Parakram VPS
+﻿# JALEBI VPS
 
 Turn any Windows laptop into a production-ready VPS with one click.
 
@@ -14,7 +14,7 @@ Turn any Windows laptop into a production-ready VPS with one click.
 
 ## Overview
 
-Parakram VPS transforms Windows machines into secure, accessible virtual servers using:
+JALEBI VPS transforms Windows machines into secure, accessible virtual servers using:
 - **OpenSSH Server** for remote shell access
 - **Cloudflare Tunnel** for public HTTPS URLs (zero open firewall ports)
 - **Web-based Management Dashboard** for real-time monitoring
@@ -33,13 +33,13 @@ Parakram VPS transforms Windows machines into secure, accessible virtual servers
 
 ## Quick Start
 
-1. Download `ParakramVPS-v3.0.0.msi` from the [releases page](https://github.com/varshinicb1/Parakram-leads/releases)
+1. Download `JalebiVPS-v3.0.0.msi` from the [releases page](https://github.com/varshinicb1/Parakram-leads/releases)
 2. Run the MSI as Administrator
 3. The installer provisions:
    - OpenSSH Server (installs + configures Windows capability)
    - Cloudflare Tunnel binary (bundled `cloudflared.exe`)
    - Management Dashboard (React + Express on port 9876)
-   - Windows service (`ParakramVPS`) for automatic startup
+   - Windows service (`JalebiVPS`) for automatic startup
    - Firewall rules (ports 22, 9876)
 4. Access your VPS:
    - **Dashboard**: http://localhost:9876
@@ -109,29 +109,29 @@ npm run dev:all      # Both concurrently
 ```powershell
 cd windows-vps
 .\build.ps1          # Downloads dependencies, builds frontend, bundles backend, runs WiX
-# Output: dist\ParakramVPS.msi (~40 MB)
+# Output: dist\JalebiVPS.msi (~40 MB)
 ```
 
 ### Manual WiX Build (after `build.ps1` populated `dist/`)
 ```powershell
-wix build wix\ParakramVPS.wxs wix\GeneratedFiles.wxs -out dist\ParakramVPS.msi -bindpath dashboard\dist -arch x64
+wix build wix\JalebiVPS.wxs wix\GeneratedFiles.wxs -out dist\JalebiVPS.msi -bindpath dashboard\dist -arch x64
 ```
 
 ### Install / Uninstall
 ```powershell
-msiexec /i dist\ParakramVPS.msi /qn
-sc query ParakramVPS                            # Should show RUNNING
+msiexec /i dist\JalebiVPS.msi /qn
+sc query JalebiVPS                            # Should show RUNNING
 curl http://127.0.0.1:9876/a/s                   # Should return JSON stats
-msiexec /x dist\ParakramVPS.msi /qn              # Clean removal
+msiexec /x dist\JalebiVPS.msi /qn              # Clean removal
 ```
 
 ### Debug Logs
 | Log | Location |
 |-----|----------|
 | MSI verbose | `%TEMP%\pvps.log` (use `/l*v`) |
-| Service install | `%ProgramData%\ParakramVPS\install-service.log` |
-| Provisioning | `%ProgramData%\ParakramVPS\provision.log` |
-| Node.js stderr | `C:\Program Files\ParakramVPS\dashboard\ParakramVPS-svc.err.log` |
+| Service install | `%ProgramData%\JalebiVPS\install-service.log` |
+| Provisioning | `%ProgramData%\JalebiVPS\provision.log` |
+| Node.js stderr | `C:\Program Files\JalebiVPS\dashboard\JalebiVPS-svc.err.log` |
 
 ## CI/CD
 
