@@ -39,7 +39,7 @@ function ContactPage() {
         <div className="mb-16">
           <SectionLabel>Contact</SectionLabel>
           <h1 className="text-[40px] md:text-[52px] font-semibold text-[#e8e6e3] tracking-[-0.025em] mb-4" style={{ fontFamily: "Sora, sans-serif" }}>Let us build together.</h1>
-          <p className="text-[15px] text-[#a8a8a8] max-w-lg">Tell us what you want to build. We respond within 24 hours. For quick answers, WhatsApp us directly.</p>
+          <p className="text-[15px] text-[#10b981] max-w-lg">Tell us what you want to build. We respond within 24 hours. For quick answers, WhatsApp us directly.</p>
         </div>
 
         <div className="grid md:grid-cols-[1fr_360px] gap-12">
@@ -52,18 +52,18 @@ function ContactPage() {
                     <div className="w-14 h-14 border border-[#c9a96e]/30 flex items-center justify-center mx-auto mb-5"><Check size={22} className="text-[#c9a96e]" /></div>
                   </motion.div>
                   <h3 className="text-[20px] font-semibold text-[#e8e6e3] mb-2" style={{ fontFamily: "Sora, sans-serif" }}>Message received.</h3>
-                  <p className="text-[13px] text-[#a8a8a8] mb-6">We will respond within 24 hours.<br />Or reach us on WhatsApp for a faster reply.</p>
+                  <p className="text-[13px] text-[#10b981] mb-6">We will respond within 24 hours.<br />Or reach us on WhatsApp for a faster reply.</p>
                   <a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 text-[12px] font-mono text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/[0.05] transition-colors"><MessageCircle size={13} /> Open WhatsApp</a>
                 </div>
               </Panel>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                 <div className="grid grid-cols-2 gap-4">
-                  <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#a8a8a8] uppercase block mb-2">Your Name</label><input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Varshini CB" required className="w-full bg-transparent border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] placeholder-[#a8a8a8] focus:border-[#c9a96e]/40 outline-none transition-colors" /></div>
-                  <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#a8a8a8] uppercase block mb-2">Email</label><input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="you@company.com" required className="w-full bg-transparent border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] placeholder-[#a8a8a8] focus:border-[#c9a96e]/40 outline-none transition-colors" /></div>
+                  <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#10b981] uppercase block mb-2">Your Name</label><input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Varshini CB" required className="w-full bg-transparent border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] placeholder-[#10b981] focus:border-[#c9a96e]/40 outline-none transition-colors" /></div>
+                  <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#10b981] uppercase block mb-2">Email</label><input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="you@company.com" required className="w-full bg-transparent border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] placeholder-[#10b981] focus:border-[#c9a96e]/40 outline-none transition-colors" /></div>
                 </div>
-                <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#a8a8a8] uppercase block mb-2">Project Type</label><select value={form.project} onChange={e => setForm({ ...form, project: e.target.value })} className="w-full bg-[#0f0f0f] border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] focus:border-[#c9a96e]/40 outline-none transition-colors">{["Custom Website", "Portfolio Site", "Mobile App", "AI Workflow / Agent", "IoT Solution", "Research Tool", "ERP / Billing / POS", "Attendance System", "Real Estate App", "Parakram Edge", "Parakram Leads", "Parakram Research", "Other"].map(s => <option key={s}>{s}</option>)}</select></div>
-                <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#a8a8a8] uppercase block mb-2">Tell us about your project</label><textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} rows={6} required placeholder="Describe what you want to build, the problem it solves, and any specific integrations or features you need..." className="w-full bg-transparent border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] placeholder-[#a8a8a8] focus:border-[#c9a96e]/40 outline-none transition-colors resize-none" /></div>
+                <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#10b981] uppercase block mb-2">Project Type</label><select value={form.project} onChange={e => setForm({ ...form, project: e.target.value })} className="w-full bg-[#0f0f0f] border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] focus:border-[#c9a96e]/40 outline-none transition-colors">{["Custom Website", "Portfolio Site", "Mobile App", "AI Workflow / Agent", "IoT Solution", "Research Tool", "ERP / Billing / POS", "Attendance System", "Real Estate App", "Parakram Edge", "Parakram Leads", "Parakram Research", "Other"].map(s => <option key={s}>{s}</option>)}</select></div>
+                <div><label className="text-[10px] font-mono tracking-[0.18em] text-[#10b981] uppercase block mb-2">Tell us about your project</label><textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} rows={6} required placeholder="Describe what you want to build, the problem it solves, and any specific integrations or features you need..." className="w-full bg-transparent border border-white/[0.07] px-4 py-3 text-[13px] text-[#e8e6e3] placeholder-[#10b981] focus:border-[#c9a96e]/40 outline-none transition-colors resize-none" /></div>
                 {error && <p className="text-red-400 text-xs">{error}</p>}
                 <div className="flex items-center gap-3 flex-wrap">
                   <GoldButton type="submit" disabled={sending} className="px-8 py-[13px] text-[13px]">{sending ? <><Loader2 size={14} className="animate-spin" /> Sending...</> : "Send Message"}</GoldButton>
@@ -75,13 +75,13 @@ function ContactPage() {
 
           <div className="flex flex-col gap-4">
             <Panel title="direct.contact" className="p-6">
-              <a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 hover:bg-[#25D366]/[0.05] transition-colors mb-3 border border-[#25D366]/15"><MessageCircle size={16} className="text-[#25D366]" /><div><p className="text-[12px] font-semibold text-[#e8e6e3]">WhatsApp</p><p className="text-[11px] text-[#a8a8a8]">+91 9901823011</p></div></a>
-              <a href="mailto:hello@getparakram.in" className="flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors border border-white/[0.06]"><Mail size={16} className="text-[#c9a96e]" /><div><p className="text-[12px] font-semibold text-[#e8e6e3]">Email</p><p className="text-[11px] text-[#a8a8a8]">hello@getparakram.in</p></div></a>
+              <a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 hover:bg-[#25D366]/[0.05] transition-colors mb-3 border border-[#25D366]/15"><MessageCircle size={16} className="text-[#25D366]" /><div><p className="text-[12px] font-semibold text-[#e8e6e3]">WhatsApp</p><p className="text-[11px] text-[#10b981]">+91 9901823011</p></div></a>
+              <a href="mailto:hello@getparakram.in" className="flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors border border-white/[0.06]"><Mail size={16} className="text-[#c9a96e]" /><div><p className="text-[12px] font-semibold text-[#e8e6e3]">Email</p><p className="text-[11px] text-[#10b981]">hello@getparakram.in</p></div></a>
             </Panel>
             <Panel title="connect" className="p-6">
               <div className="flex flex-col gap-3">
-                <a href="https://www.linkedin.com/in/varshini-cb-821176360/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[13px] text-[#a8a8a8] hover:text-[#c9a96e] transition-colors"><Linkedin size={14} /> LinkedIn — Varshini CB</a>
-                <a href="https://github.com/varshinicb1" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[13px] text-[#a8a8a8] hover:text-[#c9a96e] transition-colors"><Github size={14} /> github.com/varshinicb1</a>
+                <a href="https://www.linkedin.com/in/varshini-cb-821176360/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[13px] text-[#10b981] hover:text-[#c9a96e] transition-colors"><Linkedin size={14} /> LinkedIn — Varshini CB</a>
+                <a href="https://github.com/varshinicb1" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[13px] text-[#10b981] hover:text-[#c9a96e] transition-colors"><Github size={14} /> github.com/varshinicb1</a>
               </div>
             </Panel>
             <Panel className="p-6">

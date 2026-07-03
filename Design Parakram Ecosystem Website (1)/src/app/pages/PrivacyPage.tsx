@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import SectionLabel from "../components/SectionLabel";
 
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl md:text-5xl font-bold text-[#e8e6e3] mt-4 mb-4" style={{ fontFamily: "Sora, sans-serif" }}>
             Privacy Statement
           </h1>
-          <p className="text-[13px] text-[#a8a8a8] leading-relaxed max-w-2xl">
+          <p className="text-[13px] text-[#10b981] leading-relaxed max-w-2xl">
             Last updated: June 2026. Parakram Technologies respects your privacy. This statement explains how we collect, use, and protect your information.
           </p>
         </div>
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
               <h2 className="text-lg font-semibold text-[#c9a96e] mb-3" style={{ fontFamily: "Sora, sans-serif" }}>
                 {title}
               </h2>
-              <p className="text-[13px] text-[#a8a8a8] leading-relaxed">
+              <p className="text-[13px] text-[#10b981] leading-relaxed">
                 {content}
               </p>
             </div>
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold text-[#c9a96e] mb-3" style={{ fontFamily: "Sora, sans-serif" }}>
             Contact
           </h2>
-          <p className="text-[13px] text-[#a8a8a8] leading-relaxed">
+          <p className="text-[13px] text-[#10b981] leading-relaxed">
             For privacy-related inquiries:{" "}
             <a href="mailto:hello@getparakram.in" className="text-[#c9a96e] hover:text-[#f5e4a8] transition-colors">
               hello@getparakram.in

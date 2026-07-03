@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { animate } from "animejs";
 import type { Page } from "./types";
 import { NavBar } from "./components/NavBar";
 import { Footer } from "./components/Footer";
 import { WhatsAppFAB } from "./components/WhatsAppFAB";
+import { GameHUD } from "./components/GameHUD";
 import HomePage from "./pages/HomePage";
 import ServicesPage from "./pages/ServicesPage";
 import WorkPage from "./pages/WorkPage";
@@ -34,6 +36,19 @@ function ScrollProgress() {
 
 function AppInner() {
   const [page, setPage] = useState<Page>("home");
+  const mainRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      animate({
+        targets: mainRef.current,
+        opacity: [0, 1],
+        translateY: [12, 0],
+        duration: 400,
+        easing: "easeOutQuad",
+      });
+    }
+  }, [page]);
 
   const renderPage = () => {
     switch (page) {
@@ -56,6 +71,7 @@ function AppInner() {
       <ScrollProgress />
       <NavBar current={page} setPage={setPage} />
       <WhatsAppFAB />
+      <GameHUD />
       <motion.main key={page} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.2, 0, 0.3, 1] }}>
         {renderPage()}
       </motion.main>

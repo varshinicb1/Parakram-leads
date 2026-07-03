@@ -30,7 +30,7 @@ export function NavBar({ current, setPage }: { current: Page; setPage: (p: Page)
         </button>
         <div className="hidden md:flex items-center gap-7">
           {NAV_LINKS.map(({ label, page }) => (
-            <button key={page} onClick={() => go(page)} className={`text-[13px] tracking-wide transition-colors ${current === page ? "text-[#c9a96e]" : "text-[#a8a8a8] hover:text-[#e8e6e3]"}`}>{label}</button>
+            <button key={page} onClick={() => go(page)} className={`text-[13px] tracking-wide transition-colors ${current === page ? "text-[#c9a96e]" : "text-[#10b981] hover:text-[#e8e6e3]"}`}>{label}</button>
           ))}
           <button onClick={() => go("play")} className="text-[12px] px-3 py-1.5 font-mono tracking-[0.08em] transition-all" style={{ border: "1px solid rgba(201,169,110,0.35)", color: "#c9a96e", background: current === "play" ? "rgba(201,169,110,0.08)" : "transparent" }}>
             ▶ PLAY
@@ -41,12 +41,12 @@ export function NavBar({ current, setPage }: { current: Page; setPage: (p: Page)
             TRUST US
           </GoldButton>
         </div>
-        <button onClick={() => setOpen(v => !v)} className="md:hidden text-[#a8a8a8] hover:text-[#e8e6e3]">{open ? <X size={18} /> : <Menu size={18} />}</button>
+        <button onClick={() => setOpen(v => !v)} className="md:hidden text-[#10b981] hover:text-[#e8e6e3]">{open ? <X size={18} /> : <Menu size={18} />}</button>
       </div>
       {open && (
         <div className="md:hidden bg-[#0a0a0a] border-b border-white/[0.06] px-6 py-5 flex flex-col gap-3">
           {[...NAV_LINKS, { label: "▶ PLAY", page: "play" as Page }].map(({ label, page }) => (
-            <button key={page} onClick={() => go(page)} className={`text-left text-[13px] py-1 ${current === page ? "text-[#c9a96e]" : "text-[#a8a8a8]"}`}>{label}</button>
+            <button key={page} onClick={() => go(page)} className={`text-left text-[13px] py-1 ${current === page ? "text-[#c9a96e]" : "text-[#10b981]"}`}>{label}</button>
           ))}
           <button onClick={() => go("contact")} className="self-start text-[12px] px-5 py-2 font-semibold mt-1" style={{ background: "linear-gradient(135deg,#c9a96e,#f5e4a8)", color: "#1a0f00" }}>TRUST US</button>
         </div>

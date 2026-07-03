@@ -11,8 +11,8 @@ function PlayPage() {
           <h1 style={{ fontFamily: "'Press Start 2P', monospace" }} className="text-[18px] md:text-[26px] text-[#e8e6e3] mb-5 leading-loose">
             PARAKRAM'S QUEST
           </h1>
-          <p className="text-[14px] text-[#a8a8a8] max-w-md mx-auto">Explore the island, follow the detector, dig for treasure. Watch out for snakes — one bite and it's over.</p>
-          <p className="text-[10px] font-mono text-[#a8a8a8] mt-2">Arrows/WASD to move · Space/E to dig · Hot/Cold detector guides you</p>
+          <p className="text-[14px] text-[#10b981] max-w-md mx-auto">Explore the island, follow the detector, dig for treasure. Watch out for snakes — one bite and it's over.</p>
+          <p className="text-[10px] font-mono text-[#10b981] mt-2">Arrows/WASD to move · Space/E to dig · Hot/Cold detector guides you</p>
         </div>
 
         <div className="flex flex-col items-center gap-6">

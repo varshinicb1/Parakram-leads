@@ -12,12 +12,12 @@ export function Footer({ setPage }: { setPage: (p: Page) => void }) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-10">
           <div className="col-span-2">
             <div className="flex items-center gap-3 mb-4"><img src="/parakram_logo.png" alt="Parakram" className="w-6 h-6 object-contain" /><span className="text-[11px] font-semibold tracking-[0.22em] text-[#e8e6e3] uppercase" style={{ fontFamily: "Sora, sans-serif" }}>Parakram</span></div>
-            <p className="text-[12px] text-[#a8a8a8] leading-relaxed max-w-xs mb-5">We build everything digital — websites, apps, AI workflows, IoT, and whatever you imagine. Tell us your vision.</p>
+            <p className="text-[12px] text-[#10b981] leading-relaxed max-w-xs mb-5">We build everything digital — websites, apps, AI workflows, IoT, and whatever you imagine. Tell us your vision.</p>
             <div className="flex items-center gap-4">
-              <a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer" className="text-[#a8a8a8] hover:text-[#25D366] transition-colors"><MessageCircle size={15} /></a>
-              <a href="https://github.com/varshinicb1" target="_blank" rel="noopener noreferrer" className="text-[#a8a8a8] hover:text-[#c9a96e] transition-colors"><Github size={15} /></a>
-              <a href="https://www.linkedin.com/in/varshini-cb-821176360/" target="_blank" rel="noopener noreferrer" className="text-[#a8a8a8] hover:text-[#c9a96e] transition-colors"><Linkedin size={15} /></a>
-              <a href="mailto:hello@getparakram.in" className="text-[#a8a8a8] hover:text-[#c9a96e] transition-colors"><Mail size={15} /></a>
+              <a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer" className="text-[#10b981] hover:text-[#25D366] transition-colors"><MessageCircle size={15} /></a>
+              <a href="https://github.com/varshinicb1" target="_blank" rel="noopener noreferrer" className="text-[#10b981] hover:text-[#c9a96e] transition-colors"><Github size={15} /></a>
+              <a href="https://www.linkedin.com/in/varshini-cb-821176360/" target="_blank" rel="noopener noreferrer" className="text-[#10b981] hover:text-[#c9a96e] transition-colors"><Linkedin size={15} /></a>
+              <a href="mailto:hello@getparakram.in" className="text-[#10b981] hover:text-[#c9a96e] transition-colors"><Mail size={15} /></a>
             </div>
           </div>
           {([
@@ -25,16 +25,16 @@ export function Footer({ setPage }: { setPage: (p: Page) => void }) {
             { heading: "Company", links: [["Work", "work"], ["Products", "products"], ["About", "about"], ["Contact", "contact"], ["Privacy", "privacy"]] },
           ] as { heading: string; links: [string, Page][] }[]).map(({ heading, links }) => (
             <div key={heading}>
-              <h4 className="text-[10px] font-mono tracking-[0.2em] text-[#a8a8a8] uppercase mb-4">{heading}</h4>
-              <div className="flex flex-col gap-2">{links.map(([l, p]) => <button key={l} onClick={() => go(p)} className="text-[12px] text-[#a8a8a8] hover:text-[#c9a96e] text-left transition-colors">{l}</button>)}</div>
+              <h4 className="text-[10px] font-mono tracking-[0.2em] text-[#10b981] uppercase mb-4">{heading}</h4>
+              <div className="flex flex-col gap-2">{links.map(([l, p]) => <button key={l} onClick={() => go(p)} className="text-[12px] text-[#10b981] hover:text-[#c9a96e] text-left transition-colors">{l}</button>)}</div>
             </div>
           ))}
         </div>
         <div className="border-t border-white/[0.05] pt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <p className="text-[11px] text-[#a8a8a8]">© 2024 Parakram. Built with valor.</p>
+          <p className="text-[11px] text-[#10b981]">© 2024 Parakram. Built with valor.</p>
           <div className="flex items-center gap-4">
             {["cokakaalan.in", "vidyuthlabs.co.in", "pubrealty.in"].map(site => (
-              <a key={site} href={`https://${site}`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-[#a8a8a8] hover:text-[#c9a96e]/60 transition-colors">{site}</a>
+              <a key={site} href={`https://${site}`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-[#10b981] hover:text-[#c9a96e]/60 transition-colors">{site}</a>
             ))}
           </div>
         </div>

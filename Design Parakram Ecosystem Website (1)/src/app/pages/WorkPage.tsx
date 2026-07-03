@@ -25,7 +25,7 @@ function WorkPage() {
         <div className="mb-16">
           <SectionLabel>Portfolio</SectionLabel>
           <h1 className="text-[40px] md:text-[52px] font-semibold text-[#e8e6e3] tracking-[-0.025em] mb-4" style={{ fontFamily: "Sora, sans-serif" }}>Shipped and live.</h1>
-          <p className="text-[15px] text-[#a8a8a8] max-w-lg">Real products delivered for real clients. Every project is in production.</p>
+          <p className="text-[15px] text-[#10b981] max-w-lg">Real products delivered for real clients. Every project is in production.</p>
         </div>
 
         {/* Live websites */}
@@ -39,12 +39,12 @@ function WorkPage() {
               <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#c9a96e]/30 group-hover:border-[#c9a96e]/60 transition-colors" />
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[9px] font-mono text-[#c9a96e]/50 uppercase tracking-[0.2em] border border-[#c9a96e]/15 px-2 py-0.5">{category}</span>
-                <ExternalLink size={12} className="text-[#a8a8a8] group-hover:text-[#c9a96e] transition-colors" />
+                <ExternalLink size={12} className="text-[#10b981] group-hover:text-[#c9a96e] transition-colors" />
               </div>
               <h3 className="text-[16px] font-semibold text-[#c8c6c3] mb-1 group-hover:text-[#e8e6e3] transition-colors">{name}</h3>
               <p className="text-[11px] font-mono text-[#c9a96e]/40 mb-3">{domain}</p>
-              <p className="text-[12px] text-[#a8a8a8] leading-relaxed mb-4">{desc}</p>
-              <div className="flex gap-2 flex-wrap">{tech.map(t => <span key={t} className="text-[9px] font-mono px-2 py-0.5 text-[#a8a8a8] border border-white/[0.05]">{t}</span>)}</div>
+              <p className="text-[12px] text-[#10b981] leading-relaxed mb-4">{desc}</p>
+              <div className="flex gap-2 flex-wrap">{tech.map(t => <span key={t} className="text-[9px] font-mono px-2 py-0.5 text-[#10b981] border border-white/[0.05]">{t}</span>)}</div>
             </motion.a>
           ))}
         </div>
@@ -63,8 +63,8 @@ function WorkPage() {
                   <h3 className="text-[15px] font-semibold text-[#e8e6e3]">{name}</h3>
                 </div>
               </div>
-              <p className="text-[13px] text-[#a8a8a8] leading-relaxed mb-5">{desc}</p>
-              <div className="flex gap-2 flex-wrap">{tags.map(t => <span key={t} className="text-[9px] font-mono px-2 py-0.5 text-[#a8a8a8] border border-[#c9a96e]/10">{t}</span>)}</div>
+              <p className="text-[13px] text-[#10b981] leading-relaxed mb-5">{desc}</p>
+              <div className="flex gap-2 flex-wrap">{tags.map(t => <span key={t} className="text-[9px] font-mono px-2 py-0.5 text-[#10b981] border border-[#c9a96e]/10">{t}</span>)}</div>
             </Panel>
           ))}
         </div>
