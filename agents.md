@@ -634,38 +634,23 @@ Windows Laptop
     └── Auto-start on boot  ← Windows service + startup shortcut
 ```
 
-### Product Flow
-1. **Download & Run**: User downloads `JalebiVPS-Setup.exe` and runs as Administrator
-2. **Welcome Screen**: Apple-style introduction with animated logo
-3. **Account Creation**: Email/password or Google Sign-In (with WhatsApp alert on signup)
-4. **Configuration**: 
-   - Tunnel name (e.g., `my-workstation`)
-   - Optional Cloudflare API token for auto-tunnel setup
-   - Dashboard port (default: 9876)
-   - Subscription plan selection (Free/Edge/Fleet)
-5. **Installation**: 
-   - Prerequisites check (admin, 64-bit, 5GB+ disk, 2GB+ RAM)
-   - OpenSSH Server installation and configuration
-   - Cloudflare Tunnel binary download
-   - Web dashboard creation (React-based, served via PowerShell HttpListener)
-   - Auto-start configuration via Windows Task Scheduler
-   - Firewall rule creation for dashboard port
-6. **Completion**: 
-   - Shows credentials: SSH URL, dashboard URL, installation path
-   - Provides QR code for Cloudflare dashboard login
-   - Option to launch dashboard immediately
+### Product Flow (actual, v3 — verified by real installs on a dev machine)
+1. **Download & Run**: User downloads `JalebiVPS-<version>.msi` and runs it (double-click or `msiexec /i`)
+2. **Install**: WiX-driven MSI install, no wizard UI yet (`<UI Id="JalebiUI" />` is currently a no-op reference — the installer runs silently to completion, it does not yet show the Apple-style wizard screens described in older drafts of this doc)
+3. **Provisioning** (deferred MSI custom actions, elevated): installs + configures OpenSSH Server if not already present, verifies the bundled `cloudflared.exe`, opens firewall rules for ports 22 and 9876
+4. **Service registration**: the Node/Express dashboard backend is wrapped by WinSW (`JalebiVPS-svc.exe`) and registered as a real Windows service (`JalebiVPS`), auto-restart on failure, starts automatically on boot
+5. **Done**: dashboard reachable at `http://127.0.0.1:9876` — no account creation, no Google Sign-In, and no Razorpay flow are wired into the installer itself yet (Google Sign-In exists server-side in `backend/app/api/v1/auth.py` for the Leads product, but nothing in the VPS installer calls it)
 
-### Technical Specifications
+### Technical Specifications (actual, v3)
 | Component | Technology | Details |
 |-----------|------------|---------|
-| **Installer** | Python/customtkinter | Black/white/gold themed EXE (~25MB) |
-| **Core Logic** | Python 3.11+ | Cross-platform compatible |
-| **Dashboard Server** | PowerShell HttpListener | Lightweight, no dependencies |
-| **Web Dashboard** | HTML5/CSS3/Vanilla JS | Real-time updates via polling |
-| **Subscription System** | Razorpay API | UPI, credit/debit cards, netbanking |
-| **Cloudflare Integration** | REST API + Tunnel | Automatic DNS and tunnel creation |
-| **Security** | TLS 1.3+ | All connections encrypted |
-| **Persistence** | Windows Task Scheduler | Runs as SYSTEM at boot |
+| **Installer** | WiX Toolset v4/v7, MSI | Code-signed with a self-signed cert (~48MB, bundles everything below) |
+| **Dashboard backend** | Node.js (bundled runtime) + Express | Wrapped as a Windows service via WinSW, not a raw `sc create` |
+| **Dashboard frontend** | React + Vite + Tailwind | Sidebar layout: Dashboard/Services/Logs/Settings pages |
+| **Tunnel** | `cloudflared.exe`, bundled at build time | Binary is present after install; **not auto-configured** — no tunnel token UI yet, so "Network" shows Offline until one is set up manually |
+| **Service status** | Real only — `sc query` + process check | A service that isn't installed reports "Not Installed", never a fake "Running" (see incident log in `OPENCODE-HANDOFF.md` §6 — an earlier draft of this backend simulated status with dummy processes; that was removed) |
+| **Persistence** | Native Windows Service (SCM), not Task Scheduler | Survives reboot via the service's own Automatic start type |
+| **Subscription/payment** | Not yet wired into this installer | Backend has `vps_subscription` routes; nothing in the MSI/dashboard calls them yet |
 
 ### Monetization
 | Tier | Price/Month | Features |
@@ -690,23 +675,25 @@ Windows Laptop
    - SSO integration (future)
    - Audit logging and compliance (future)
 
-### Current Status
-✅ **MVP Complete**: 
-- Installer EXE builds and runs on Windows 10/11
-- OpenSSH server installation and configuration
-- Cloudflare Tunnel binary download and setup
-- Web dashboard with real-time metrics
-- Google Sign-In with JWT authentication
-- WhatsApp alert on new signups (+91 7259426670)
-- Razorpay subscription integration (sandbox mode)
-- Apple-style installer UI with black/white/gold theme
+### Current Status (verified, not aspirational)
+✅ **Working end-to-end**, confirmed by real `msiexec /i` installs on a dev machine:
+- MSI builds and installs cleanly on Windows 10/11 (x64), signed with a self-signed cert
+- OpenSSH Server installed/configured automatically if missing
+- `cloudflared.exe` bundled (download at build time, not install time)
+- Dashboard (React/Vite) reachable at `http://127.0.0.1:9876`, service runs under WinSW with auto-restart
+- Real, honest service-status reporting (no simulated/fake statuses)
+- Clean uninstall — verified to leave zero files/services/firewall rules behind (a stray empty top-level folder can persist in rare cases due to a Windows file-handle-release race; a `FinalCleanup` retry action mitigates this, being hardened further)
+- CI: GitHub Actions builds, code-signs, and smoke-tests (install→verify→uninstall) the MSI on every tagged release; Linux tarball build also passes
 
-🚧 **In Progress**:
-- Production Razorpay credentials integration
-- Automated Cloudflare tunnel creation via API
-- Multi-language support (English/Hindi)
-- Silent install mode for enterprise deployment
-- Automatic updates via GitHub Releases
+🚧 **Not yet built** (do not claim these to a customer until done):
+- No installer wizard UI (installs silently; the "Apple-style black/white/gold wizard" described earlier in this doc does not exist for v3)
+- No account creation / Google Sign-In / Razorpay flow inside the installer or dashboard
+- No tunnel-token setup UI — Cloudflare Tunnel binary is present but unconfigured after install
+- Caddy, Nebula mesh VPN, restic backups, and Leads-backend hosting are NOT implemented in the v3 MSI (they existed only in the abandoned Python installer); the dashboard correctly shows them as "Not Installed"
+- No auto-update (`/a/update-check` is a stub)
+- No user database viewer, download-stats page, or "first N users free" logic — not implemented
+- No WhatsApp remote-control (outbound WhatsApp *alerts* exist elsewhere in the backend for Leads signups; nothing sends alerts or accepts commands for VPS events)
+- Compute/GPU rental to third parties is unbuilt and requires real sandboxing (VM-level isolation, not just Docker) before it should go near a stranger's workload — treat as a separate, later design effort, not a checkbox on this list
 
 ### Future Enhancements
 - **GPU Passthrough**: Expose host GPU for ML/AI workloads

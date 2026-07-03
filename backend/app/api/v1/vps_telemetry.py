@@ -355,7 +355,7 @@ def is_newer(remote: str, current: str) -> bool:
 def _platform_matches(asset_name: str, platform: str) -> bool:
     name = asset_name.lower()
     if platform == "windows":
-        return name.endswith(".exe") and "parakram" in name
+        return name.endswith((".exe", ".msi"))
     if platform == "linux":
         return name.endswith((".tar.gz", ".appimage", ".deb")) or "linux" in name
     return False

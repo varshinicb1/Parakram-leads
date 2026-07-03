@@ -45,7 +45,7 @@ function AboutPage({ setPage }: { setPage: (p: Page) => void }) {
                 <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
               </div>
               <h2 className="text-[22px] font-semibold text-[#e8e6e3] mb-1" style={{ fontFamily: "Sora, sans-serif" }}>Varshini CB</h2>
-              <p className="text-[12px] text-[#5a5a5a] mb-5">Full-Stack Developer · Systems Designer · Builder</p>
+              <p className="text-[12px] text-[#a8a8a8] mb-5">Full-Stack Developer · Systems Designer · Builder</p>
               <div className="flex flex-col gap-2">
                 <a href="https://www.linkedin.com/in/varshini-cb-821176360/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 text-[12px] font-mono transition-all hover:bg-[#c9a96e]/[0.06]" style={{ border: "1px solid rgba(201,169,110,0.2)", color: "#c9a96e" }}>
                   <Linkedin size={13} /> Connect on LinkedIn
@@ -53,7 +53,7 @@ function AboutPage({ setPage }: { setPage: (p: Page) => void }) {
                 <a href="https://github.com/varshinicb1" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 text-[12px] font-mono transition-all hover:bg-white/[0.03]" style={{ border: "1px solid rgba(255,255,255,0.07)", color: "#7a7a7a" }}>
                   <Github size={13} /> github.com/varshinicb1
                 </a>
-                <a href="https://wa.me/917259426670" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 text-[12px] font-mono transition-all hover:bg-[#25D366]/[0.05]" style={{ border: "1px solid rgba(37,211,102,0.2)", color: "#25D366" }}>
+                <a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 text-[12px] font-mono transition-all hover:bg-[#25D366]/[0.05]" style={{ border: "1px solid rgba(37,211,102,0.2)", color: "#25D366" }}>
                   <MessageCircle size={13} /> WhatsApp
                 </a>
               </div>
@@ -65,7 +65,7 @@ function AboutPage({ setPage }: { setPage: (p: Page) => void }) {
               <div className="flex flex-col gap-3">
                 {skills.map(({ label, val }) => (
                   <div key={label} className="flex items-center gap-3">
-                    <span className="text-[11px] text-[#5a5a5a] w-56 flex-shrink-0">{label}</span>
+                    <span className="text-[11px] text-[#a8a8a8] w-56 flex-shrink-0">{label}</span>
                     <div className="flex-1 h-[4px] bg-white/[0.04]">
                       <motion.div className="h-full" style={{ background: "linear-gradient(90deg,#7a5020,#c9a96e,#f5e4a8)" }} initial={{ width: 0 }} animate={{ width: `${val}%` }} transition={{ duration: 1.2, delay: 0.2, ease: [0.4, 0, 0.2, 1] }} />
                     </div>
@@ -82,7 +82,7 @@ function AboutPage({ setPage }: { setPage: (p: Page) => void }) {
                   "She founded Parakram with one mission: deliver bespoke digital products at a quality level usually reserved for large teams — leaner, faster, more personal.",
                   "Every project at Parakram clears one bar: would we be proud to put our name on this? Yes = ship. No = iterate.",
                   "Parakram is growing into a full digital ecosystem — custom client work alongside independent products. Everything digital. One studio.",
-                ].map((p, i) => <p key={i} className="text-[13px] text-[#5a5a5a] leading-relaxed">{p}</p>)}
+                ].map((p, i) => <p key={i} className="text-[13px] text-[#a8a8a8] leading-relaxed">{p}</p>)}
                 <div className="pt-3 border-t border-white/[0.05]">
                   <button onClick={() => navTo(setPage, "contact")} className="flex items-center gap-2 text-[12px] font-mono text-[#c9a96e] hover:gap-3 transition-all">Start a conversation <ArrowRight size={12} /></button>
                 </div>
@@ -98,7 +98,7 @@ function AboutPage({ setPage }: { setPage: (p: Page) => void }) {
             { icon: Star, t: "Craft First", d: "Design and engineering matter equally." },
             { icon: Rocket, t: "Own Outcomes", d: "We treat your project like our own." },
           ].map(({ icon: Icon, t, d }) => (
-            <div key={t} className="bg-[#070707] p-7"><Icon size={16} className="text-[#c9a96e] mb-4" /><h3 className="text-[14px] font-semibold text-[#c8c6c3] mb-2">{t}</h3><p className="text-[12px] text-[#3a3a3a] leading-relaxed">{d}</p></div>
+            <div key={t} className="bg-[#070707] p-7"><Icon size={16} className="text-[#c9a96e] mb-4" /><h3 className="text-[14px] font-semibold text-[#c8c6c3] mb-2">{t}</h3><p className="text-[12px] text-[#a8a8a8] leading-relaxed">{d}</p></div>
           ))}
         </div>
       </div>

@@ -14,10 +14,10 @@ export function Footer({ setPage }: { setPage: (p: Page) => void }) {
             <div className="flex items-center gap-3 mb-4"><img src="/parakram_logo.png" alt="Parakram" className="w-6 h-6 object-contain" /><span className="text-[11px] font-semibold tracking-[0.22em] text-[#e8e6e3] uppercase" style={{ fontFamily: "Sora, sans-serif" }}>Parakram</span></div>
             <p className="text-[12px] text-[#333] leading-relaxed max-w-xs mb-5">We build everything digital — websites, apps, AI workflows, IoT, and whatever you imagine. Tell us your vision.</p>
             <div className="flex items-center gap-4">
-              <a href="https://wa.me/917259426670" target="_blank" rel="noopener noreferrer" className="text-[#252525] hover:text-[#25D366] transition-colors"><MessageCircle size={15} /></a>
-              <a href="https://github.com/varshinicb1" target="_blank" rel="noopener noreferrer" className="text-[#252525] hover:text-[#c9a96e] transition-colors"><Github size={15} /></a>
-              <a href="https://www.linkedin.com/in/varshini-cb-821176360/" target="_blank" rel="noopener noreferrer" className="text-[#252525] hover:text-[#c9a96e] transition-colors"><Linkedin size={15} /></a>
-              <a href="mailto:hello@getparakram.in" className="text-[#252525] hover:text-[#c9a96e] transition-colors"><Mail size={15} /></a>
+              <a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer" className="text-[#a8a8a8] hover:text-[#25D366] transition-colors"><MessageCircle size={15} /></a>
+              <a href="https://github.com/varshinicb1" target="_blank" rel="noopener noreferrer" className="text-[#a8a8a8] hover:text-[#c9a96e] transition-colors"><Github size={15} /></a>
+              <a href="https://www.linkedin.com/in/varshini-cb-821176360/" target="_blank" rel="noopener noreferrer" className="text-[#a8a8a8] hover:text-[#c9a96e] transition-colors"><Linkedin size={15} /></a>
+              <a href="mailto:hello@getparakram.in" className="text-[#a8a8a8] hover:text-[#c9a96e] transition-colors"><Mail size={15} /></a>
             </div>
           </div>
           {([
@@ -25,7 +25,7 @@ export function Footer({ setPage }: { setPage: (p: Page) => void }) {
             { heading: "Company", links: [["Work", "work"], ["Products", "products"], ["About", "about"], ["Contact", "contact"], ["Privacy", "privacy"]] },
           ] as { heading: string; links: [string, Page][] }[]).map(({ heading, links }) => (
             <div key={heading}>
-              <h4 className="text-[10px] font-mono tracking-[0.2em] text-[#2a2a2a] uppercase mb-4">{heading}</h4>
+              <h4 className="text-[10px] font-mono tracking-[0.2em] text-[#a8a8a8] uppercase mb-4">{heading}</h4>
               <div className="flex flex-col gap-2">{links.map(([l, p]) => <button key={l} onClick={() => go(p)} className="text-[12px] text-[#2e2e2e] hover:text-[#7a7a7a] text-left transition-colors">{l}</button>)}</div>
             </div>
           ))}

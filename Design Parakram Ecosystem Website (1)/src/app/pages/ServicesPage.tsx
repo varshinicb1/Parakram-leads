@@ -31,22 +31,22 @@ function ServicesPage({ setPage }: { setPage: (p: Page) => void }) {
         <div className="mb-16">
           <SectionLabel>Services</SectionLabel>
           <h1 className="text-[40px] md:text-[52px] font-semibold text-[#e8e6e3] tracking-[-0.025em] mb-4" style={{ fontFamily: "Sora, sans-serif" }}>What we build.</h1>
-          <p className="text-[15px] text-[#5a5a5a] max-w-lg leading-relaxed">Every project is delivered on time, on spec, with obsessive attention to quality. For pricing, reach us on WhatsApp.</p>
+          <p className="text-[15px] text-[#a8a8a8] max-w-lg leading-relaxed">Every project is delivered on time, on spec, with obsessive attention to quality. For pricing, reach us on WhatsApp.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {fullServices.map(({ name, icon: Icon, desc, time, tech }, i) => (
             <motion.div key={name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="relative p-7 group" style={{ border: "1px solid rgba(201,169,110,0.1)", background: "#0a0a0a" }} whileHover={{ borderColor: "rgba(201,169,110,0.3)", y: -2 }}>
               <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#c9a96e]/40" /><div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-[#c9a96e]/40" /><div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-[#c9a96e]/40" /><div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#c9a96e]/40" />
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 flex items-center justify-center border border-white/[0.07] group-hover:border-[#c9a96e]/30 transition-colors bg-white/[0.02]"><Icon size={16} className="text-[#3a3a3a] group-hover:text-[#c9a96e] transition-colors" /></div>
+                <div className="w-9 h-9 flex items-center justify-center border border-white/[0.07] group-hover:border-[#c9a96e]/30 transition-colors bg-white/[0.02]"><Icon size={16} className="text-[#a8a8a8] group-hover:text-[#c9a96e] transition-colors" /></div>
                 <h3 className="text-[15px] font-semibold text-[#d0cec9] group-hover:text-[#e8e6e3] transition-colors">{name}</h3>
               </div>
-              <p className="text-[13px] text-[#4a4a4a] leading-relaxed mb-5">{desc}</p>
+              <p className="text-[13px] text-[#a8a8a8] leading-relaxed mb-5">{desc}</p>
               <div className="flex items-center justify-between border-t border-white/[0.05] pt-4 mb-3">
-                <div><p className="text-[9px] font-mono text-[#2a2a2a] uppercase mb-1">Typical Timeline</p><p className="text-[11px] font-mono text-[#5a5a5a]">{time}</p></div>
-                <div className="text-right"><p className="text-[9px] font-mono text-[#2a2a2a] uppercase mb-1">Pricing</p><a href="https://wa.me/917259426670" target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-[#25D366]/70 hover:text-[#25D366] transition-colors">WhatsApp us</a></div>
+                <div><p className="text-[9px] font-mono text-[#a8a8a8] uppercase mb-1">Typical Timeline</p><p className="text-[11px] font-mono text-[#a8a8a8]">{time}</p></div>
+                <div className="text-right"><p className="text-[9px] font-mono text-[#a8a8a8] uppercase mb-1">Pricing</p><a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer" className="text-[11px] font-mono text-[#25D366]/70 hover:text-[#25D366] transition-colors">WhatsApp us</a></div>
               </div>
-              <div className="flex items-center gap-2 flex-wrap mb-4">{tech.map(t => <span key={t} className="text-[9px] font-mono px-2 py-0.5 text-[#3a3a3a] border border-white/[0.05]">{t}</span>)}</div>
+              <div className="flex items-center gap-2 flex-wrap mb-4">{tech.map(t => <span key={t} className="text-[9px] font-mono px-2 py-0.5 text-[#a8a8a8] border border-white/[0.05]">{t}</span>)}</div>
               <button onClick={() => go("contact")} className="w-full py-2.5 text-[12px] font-mono text-[#c9a96e] border border-[#c9a96e]/20 hover:border-[#c9a96e]/50 hover:bg-[#c9a96e]/[0.04] transition-colors tracking-[0.08em]">[ GET STARTED ]</button>
             </motion.div>
           ))}

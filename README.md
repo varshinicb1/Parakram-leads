@@ -27,9 +27,9 @@ JALEBI VPS transforms Windows machines into secure, accessible virtual servers u
 - **Military-Grade Security**: All traffic encrypted through Cloudflare Tunnel — zero inbound firewall rules required
 - **Real-Time Dashboard**: React-powered dashboard with live CPU, memory, disk, uptime, and service status
 - **One-Click Installation**: Automated MSI installer via WiX v7 — provisions everything in minutes
-- **Subscription Management**: Tiered plans (Free/Edge/Fleet) with Razorpay integration (UPI, cards, netbanking)
 - **Persistent Operation**: Runs as a Windows service via WinSW, survives reboots with auto-start
 - **Code-Signed Installer**: Self-signed MSI with CI pipeline that can use real certificates
+- **Honest status reporting**: services that aren't installed show "Not Installed" — never a fake "Running" badge
 
 ## Quick Start
 
@@ -58,13 +58,17 @@ Windows Laptop
     └── Auto-start on boot ← Windows service + Task Scheduler
 ```
 
-## Subscription Plans
+## Subscription Plans (planned pricing — not yet wired into the installer)
 
 | Tier | Price/Month | Features |
 |------|-------------|----------|
 | **Free** | $0 | 1 VPS tunnel, basic dashboard, manual tunnel setup |
 | **Edge** | $9 | 5 VPS, custom domain, auto-tunnel setup, priority support |
 | **Fleet** | $49 | Unlimited VPS, API access, team management, SLA |
+
+The backend has Razorpay + subscription routes (`vps_subscription`) and Google Sign-In (`auth.py`),
+but nothing in this installer or dashboard calls them yet — there's no account creation, sign-in,
+or payment flow in the MSI today. Table above is the target pricing, not a live feature.
 
 ## Technology Stack
 
@@ -87,6 +91,9 @@ Windows Laptop
 3. **Certificate is self-signed** — SmartScreen may warn on download. Upgrade path: Azure Trusted Signing (~$10/mo) or OV cert
 4. **Windows OpenSSH capability** requires Windows Update connectivity on machines where it isn't cached
 5. **Auto-update** is a placeholder — `/a/update-check` always returns `{available: false}`
+6. **No installer wizard, account creation, or Google Sign-In flow in the MSI/dashboard** — install is silent; auth exists server-side for the Leads product only
+7. **No release has been published yet.** CI (`vps-release.yml`) builds, signs, and smoke-tests the MSI on every `v*` tag, but the first clean run through the full pipeline is still in progress — check the [Actions tab](https://github.com/varshinicb1/Parakram-leads/actions/workflows/vps-release.yml) or [Releases page](https://github.com/varshinicb1/Parakram-leads/releases) for current status before assuming a download is available
+8. **Uninstall can rarely leave an empty top-level install folder** due to a Windows file-handle-release race right after the service process exits (all files/services/firewall rules are removed regardless — only a harmless empty directory can remain). A retry-based cleanup step is in place; if you see a leftover empty `C:\Program Files\JalebiVPS`, it's safe to delete manually
 
 ## Development
 
