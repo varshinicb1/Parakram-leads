@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jalebi VPS — Turn your laptop into a sweet little server</title>
+<meta name="description" content="Jalebi VPS turns any Windows laptop into a secure, always-on server in one click. Free, honest, and coiled with love." />
+<link rel="icon" type="image/png" href="assets/icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <img src="assets/icon.png" alt="" class="brand-icon" />
+      <span class="brand-name">Jalebi<span class="accent">VPS</span></span>
+    </div>
+    <a class="nav-cta" href="#download">Download Free</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Fast. Secure. Reliable. Sweet.</p>
+    <h1>Your laptop, <span class="squiggle-wrap">coiled<svg class="squiggle" viewBox="0 0 200 20"><path d="M2 10 Q 25 -5, 50 10 T 100 10 T 150 10 T 198 10" fill="none" stroke="#ff9a3c" stroke-width="4" stroke-linecap="round"/></svg></span> into a server.</h1>
+    <p class="sub">One installer. Zero config. A real SSH server, a public HTTPS tunnel, and a dashboard that never lies to you — running on the machine you already own.</p>
+    <div class="hero-actions">
+      <a href="#download" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download for Windows
+      </a>
+      <a href="#why" class="btn btn-ghost">Why "Jalebi"?</a>
+    </div>
+    <div class="hero-meta">
+      <span>✓ Free — no account needed</span>
+      <span>✓ Code-signed installer</span>
+      <span>✓ Open source</span>
+    </div>
+  </div>
+  <div class="hero-stage" id="jalebi-stage" aria-hidden="true"></div>
+</header>
+
+<section class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>SSH ACCESS</span><span>•</span><span>CLOUDFLARE TUNNEL</span><span>•</span><span>LIVE DASHBOARD</span><span>•</span>
+    <span>AUTO-RESTART</span><span>•</span><span>CODE-SIGNED</span><span>•</span><span>ZERO PORT FORWARDING</span><span>•</span>
+    <span>SSH ACCESS</span><span>•</span><span>CLOUDFLARE TUNNEL</span><span>•</span><span>LIVE DASHBOARD</span><span>•</span>
+    <span>AUTO-RESTART</span><span>•</span><span>CODE-SIGNED</span><span>•</span><span>ZERO PORT FORWARDING</span><span>•</span>
+  </div>
+</section>
+
+<section class="why" id="why">
+  <div class="why-visual">
+    <div class="jalebi-plate">
+      <div class="jalebi-spiral"></div>
+      <div class="jalebi-spiral d2"></div>
+      <div class="jalebi-spiral d3"></div>
+      <div class="syrup-drip"></div>
+      <div class="syrup-drip d2"></div>
+    </div>
+  </div>
+  <div class="why-copy">
+    <p class="eyebrow">why the name</p>
+    <h2>It's named after a sweet that shouldn't work — but does.</h2>
+    <p>A jalebi starts as loose, shapeless batter. It only becomes something worth eating once it's <em>coiled</em> — piped into tight, tangled spirals, fried until crisp, then soaked all the way through in syrup. Crispy on the outside. Soft, sweet, and dense with flavor at the core.</p>
+    <p>That's exactly what this installer does to your laptop. It takes a plain, idle Windows machine and coils real infrastructure around it — an SSH server, an encrypted tunnel, a service that restarts itself, a dashboard that tells the truth — until what's left is small, dense, and quietly excellent. Crispy security on the outside. A sweet, simple experience at the core.</p>
+    <p class="why-signoff">Also — nobody in the world had used it for a VPS product yet. Now we have.</p>
+  </div>
+</section>
+
+<section class="features">
+  <p class="eyebrow center">what you get</p>
+  <h2 class="center">Everything coiled in, nothing hidden</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <h3>Real SSH, instantly</h3>
+      <p>OpenSSH Server is installed and configured automatically — no manual Windows feature hunting.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>Public HTTPS, zero ports</h3>
+      <p>A bundled Cloudflare Tunnel binary means no router config, no port forwarding, no exposed firewall rules.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>A dashboard that doesn't lie</h3>
+      <p>Every status you see is real. Nothing installed shows "Not Installed" — never a fake green light.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <h3>Runs as a real Windows service</h3>
+      <p>Wrapped with WinSW, auto-restarts on failure, and survives every reboot without you thinking about it.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✍️</div>
+      <h3>Code-signed installer</h3>
+      <p>A real, verifiable signature on every release — no more "unknown publisher" warnings than absolutely necessary.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧡</div>
+      <h3>Free, honestly</h3>
+      <p>No account wall to try it. Download, install, and you have a server. That's the whole deal.</p>
+    </div>
+  </div>
+</section>
+
+<section class="download" id="download">
+  <div class="download-card">
+    <img src="assets/logo.png" alt="Jalebi VPS" class="download-logo" />
+    <h2>Get your sweet little server</h2>
+    <p>Windows 10/11, 64-bit. Works on a fresh laptop or one you've had for years.</p>
+    <a class="btn btn-primary btn-lg" href="https://github.com/varshinicb1/Parakram-leads/releases/latest" target="_blank" rel="noopener">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Download Jalebi VPS — Free
+    </a>
+    <p class="download-note">Grabs the latest signed <code>.msi</code> from GitHub Releases.</p>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="assets/icon.png" alt="" class="brand-icon" />
+      <span>Jalebi<span class="accent">VPS</span></span>
+    </div>
+    <p>Part of the Parakram Suite. Built by Parakram Technologies.</p>
+    <div class="footer-links">
+      <a href="https://github.com/varshinicb1/Parakram-leads" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/varshinicb1/Parakram-leads/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="mailto:cbvarshini1@gmail.com">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+<script type="module" src="main.js"></script>
+</body>
+</html>
