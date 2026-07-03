@@ -15,6 +15,7 @@ interface SystemStats {
   restic: 'running' | 'stopped' | 'not_installed';
   c: number;
   l: 'running' | 'stopped' | 'not_installed';
+  gpu: string;
 }
 
 function execPromise(cmd: string): Promise<string> {
@@ -57,6 +58,20 @@ export async function getSystemStats(): Promise<SystemStats> {
     getServiceStatus('leads'),
   ]);
 
+  let gpu = 'none';
+  try {
+    const gpuOut = await execPromise(
+      'powershell -NoProfile -Command "Get-CimInstance Win32_VideoController | Where-Object { $_.Name -notmatch \'Microsoft\' } | Select-Object -First 1 | Format-List Name,AdapterRAM,DriverVersion" 2>nul'
+    );
+    if (gpuOut) {
+      const nameMatch = gpuOut.match(/Name\s*:\s*(.+)/);
+      const name = nameMatch ? nameMatch[1].trim() : '';
+      const ramMatch = gpuOut.match(/AdapterRAM\s*:\s*(.+)/);
+      const ram = ramMatch ? (parseInt(ramMatch[1], 10) / 1073741824).toFixed(1) + ' GB' : '';
+      gpu = name + (ram ? ` (${ram})` : '');
+    }
+  } catch { /* fallback */ }
+
   const toState = (st: string): 'running' | 'stopped' | 'not_installed' => {
     if (st === 'running') return 'running';
     if (st === 'stopped') return 'stopped';
@@ -76,5 +91,6 @@ export async function getSystemStats(): Promise<SystemStats> {
     restic: toState(resticSt),
     c: cpuPercent,
     l: toState(leadsSt),
+    gpu,
   };
 }

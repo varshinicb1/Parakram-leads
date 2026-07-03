@@ -24,12 +24,17 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 z-30 flex h-screen w-56 flex-col border-r border-border bg-sidebar-bg">
-      <div className="flex h-14 items-center gap-3 px-5 border-b border-border">
-        <img
-          src="/branding/icon.png"
-          alt="Jalebi VPS"
-          className="h-7 w-7 shrink-0 rounded-[8px] object-cover"
-        />
+      <div className="flex h-16 items-center gap-3 px-5 border-b border-border">
+        <div className="shrink-0" style={{ perspective: '500px' }}>
+          <img
+            src="/branding/icon.png"
+            alt="Jalebi VPS"
+            className="h-10 w-10 rounded-[10px] object-cover shadow-xl shadow-black/10 ring-1 ring-white/5"
+            style={{ transformStyle: 'preserve-3d', transition: 'transform 0.3s ease' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05) rotateY(3deg)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none' }}
+          />
+        </div>
         <div className="flex flex-col leading-none">
           <span className="text-sm font-semibold text-text-primary tracking-tight">Jalebi VPS</span>
           <span className="text-[10px] text-text-muted font-medium tracking-wide">Mission Control</span>

@@ -78,8 +78,8 @@ export function Dashboard() {
             />
             <MetricCard
               label="Network"
-              value={stats?.t ? 'Active' : '—'}
-              sub={stats?.t ? 'tunnel connected' : '—'}
+              value={stats?.t === 'running' ? 'Active' : '—'}
+              sub={stats?.t === 'running' ? 'tunnel connected' : '—'}
               icon={<Network className="h-3.5 w-3.5" strokeWidth={1.5} />}
             />
           </div>
