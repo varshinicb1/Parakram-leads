@@ -20,8 +20,22 @@ try {
     $svc = Get-Service sshd -ErrorAction SilentlyContinue
     if (-not $svc) {
         Write-Log "OpenSSH.Server capability not present; installing..."
-        Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0 -ErrorAction Stop | Out-Null
-        Write-Log "OpenSSH.Server capability installed"
+        # Add-WindowsCapability can hang indefinitely if it can't reach Windows
+        # Update (observed on a CI runner: 30+ minutes with no progress). Run it
+        # as a job with a hard timeout so a slow/unreachable network degrades
+        # gracefully instead of blocking the whole install.
+        $job = Start-Job -ScriptBlock {
+            Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0 -ErrorAction Stop
+        }
+        $completed = Wait-Job -Job $job -Timeout 180
+        if ($completed) {
+            Receive-Job -Job $job -ErrorAction SilentlyContinue | Out-Null
+            Write-Log "OpenSSH.Server capability installed"
+        } else {
+            Stop-Job -Job $job -ErrorAction SilentlyContinue
+            Write-Log "WARNING: OpenSSH.Server install timed out after 180s (likely no Windows Update reachability); skipping"
+        }
+        Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
         $svc = Get-Service sshd -ErrorAction SilentlyContinue
     }
     if ($svc) {
