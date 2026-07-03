@@ -414,16 +414,16 @@ function TreasureGame() {
               <div className="relative z-10 text-center px-6">
                 {phase === "dead" && (
                   <><p style={{ fontFamily: "'Press Start 2P', monospace" }} className="text-[#c9a96e] text-sm mb-3 leading-relaxed">SNAKE BITE!</p>
-                  <p className="text-[#5a5a5a] text-xs font-mono mb-2">Score: {score}</p>
+                  <p className="text-[#a8a8a8] text-xs font-mono mb-2">Score: {score}</p>
                   {score >= highScore && score > 0 && <p className="text-[#f5e4a8] text-[10px] font-mono mb-2 animate-pulse">NEW HIGH SCORE!</p>}
-                  <p className="text-[#3a3a3a] text-[10px] font-mono mb-6">Best: {highScore}</p></>
+                  <p className="text-[#a8a8a8] text-[10px] font-mono mb-6">Best: {highScore}</p></>
                 )}
                 {phase === "idle" && (
                   <><p style={{ fontFamily: "'Press Start 2P', monospace" }} className="text-[#c9a96e] text-sm mb-4 leading-loose">PARAKRAM'S QUEST</p>
-                  <p className="text-[#5a5a5a] text-xs font-mono mb-1">Explore the island. Find the treasure!</p>
-                  <p className="text-[#5a5a5a] text-xs font-mono mb-1">Watch for snakes. Use detector.</p>
-                  <p className="text-[#3a3a3a] text-xs font-mono mb-1">Arrows/WASD to move · Space/E to dig</p>
-                  <p className="text-[#2a2a2a] text-[10px] font-mono mb-6">Best: {highScore}</p></>
+                  <p className="text-[#a8a8a8] text-xs font-mono mb-1">Explore the island. Find the treasure!</p>
+                  <p className="text-[#a8a8a8] text-xs font-mono mb-1">Watch for snakes. Use detector.</p>
+                  <p className="text-[#a8a8a8] text-xs font-mono mb-1">Arrows/WASD to move · Space/E to dig</p>
+                  <p className="text-[#a8a8a8] text-[10px] font-mono mb-6">Best: {highScore}</p></>
                 )}
                 <button onClick={start}
                   className="px-5 py-3 text-[9px] text-[#c9a96e] tracking-[0.15em] hover:bg-[#c9a96e]/10 transition-colors leading-relaxed"
@@ -448,8 +448,8 @@ function TreasureGame() {
       </Panel>
       <div className="flex items-center justify-between w-full px-1">
         <span className="text-[11px] font-mono text-[#c9a96e]">SCORE: <span className="text-[#f5e4a8]">{score}</span></span>
-        <span className={`text-[10px] font-mono ${proximity === "BURNING!" ? "text-red-400 animate-pulse" : proximity === "HOT!" ? "text-orange-400" : proximity === "Warm" ? "text-yellow-500" : "text-[#3a3a3a]"}`}>[{proximity || "---"}]</span>
-        <span className="text-[11px] font-mono text-[#2a2a2a]">LV {level}</span>
+        <span className={`text-[10px] font-mono ${proximity === "BURNING!" ? "text-red-400 animate-pulse" : proximity === "HOT!" ? "text-orange-400" : proximity === "Warm" ? "text-yellow-500" : "text-[#a8a8a8]"}`}>[{proximity || "---"}]</span>
+        <span className="text-[11px] font-mono text-[#a8a8a8]">LV {level}</span>
       </div>
       <div className="flex items-center gap-2">
         <button onPointerDown={() => keysRef.current.add("ArrowLeft")} onPointerUp={() => keysRef.current.delete("ArrowLeft")} onPointerLeave={() => keysRef.current.delete("ArrowLeft")} className="w-11 h-11 flex items-center justify-center text-[#c9a96e] font-mono text-sm" style={{ border: "1px solid rgba(201,169,110,0.2)" }}>◀</button>

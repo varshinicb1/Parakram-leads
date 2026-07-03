@@ -182,7 +182,7 @@ function StorePage({ setPage }: { setPage: (p: Page) => void }) {
         <div className="mb-16">
           <SectionLabel>Parakram Store</SectionLabel>
           <h1 className="text-[40px] md:text-[52px] font-semibold text-[#e8e6e3] tracking-[-0.025em] mb-4" style={{ fontFamily: "Sora, sans-serif" }}>Everything we build.</h1>
-          <p className="text-[15px] text-[#5a5a5a] max-w-lg leading-relaxed">SaaS, infrastructure, mobile apps, templates, games — all from one studio. Buy once, deploy anywhere.</p>
+          <p className="text-[15px] text-[#a8a8a8] max-w-lg leading-relaxed">SaaS, infrastructure, mobile apps, templates, games — all from one studio. Buy once, deploy anywhere.</p>
         </div>
 
         <div className="font-mono text-[11px] text-[#c9a96e]/30 mb-8 border-b border-white/[0.04] pb-4">
@@ -219,7 +219,7 @@ function StorePage({ setPage }: { setPage: (p: Page) => void }) {
                           <p className="text-[13px] text-[#6a6a6a] leading-relaxed max-w-2xl">{product.description}</p>
                           <div className="flex flex-wrap gap-2 mt-3">
                             {product.features.map((f) => (
-                              <span key={f} className="flex items-center gap-1 text-[10px] font-mono text-[#4a4a4a] border border-white/[0.05] px-2 py-0.5">
+                              <span key={f} className="flex items-center gap-1 text-[10px] font-mono text-[#a8a8a8] border border-white/[0.05] px-2 py-0.5">
                                 <Check size={8} className="text-[#c9a96e]" /> {f}
                               </span>
                             ))}
@@ -233,21 +233,21 @@ function StorePage({ setPage }: { setPage: (p: Page) => void }) {
                           <div key={tier.name} className="border border-white/[0.06] p-4 flex flex-col">
                             <p className="text-[10px] font-semibold text-[#c9a96e]/80 mb-1">{tier.name}</p>
                             <p className="text-[26px] font-semibold text-[#e8e6e3] mb-3" style={{ fontFamily: "Sora, sans-serif" }}>
-                              {tier.price}<span className="text-[11px] text-[#5a5a5a] font-normal">{tier.price !== "$0" ? "/mo" : ""}</span>
+                              {tier.price}<span className="text-[11px] text-[#a8a8a8] font-normal">{tier.price !== "$0" ? "/mo" : ""}</span>
                             </p>
                             <div className="flex flex-col gap-1.5 mb-4 flex-1">
                               {Object.entries(tier.features).map(([label, value]) => (
                                 <div key={label} className="flex items-start gap-2">
                                   <Check size={9} className="text-[#c9a96e] mt-0.5 flex-shrink-0" />
                                   <div>
-                                    <p className="text-[8px] text-[#2a2a2a] uppercase font-mono">{label}</p>
-                                    <p className="text-[10px] text-[#5a5a5a]">{value}</p>
+                                    <p className="text-[8px] text-[#a8a8a8] uppercase font-mono">{label}</p>
+                                    <p className="text-[10px] text-[#a8a8a8]">{value}</p>
                                   </div>
                                 </div>
                               ))}
                             </div>
-                            <p className="text-[8px] font-mono text-[#3a3a3a] mb-3">{tier.target}</p>
-                            <a href={product.status === "LIVE" && product.href !== "#" ? product.href : "https://wa.me/917259426670"} target="_blank" rel="noopener noreferrer">
+                            <p className="text-[8px] font-mono text-[#a8a8a8] mb-3">{tier.target}</p>
+                            <a href={product.status === "LIVE" && product.href !== "#" ? product.href : "https://wa.me/919901823011"} target="_blank" rel="noopener noreferrer">
                               <GoldButton className="w-full text-[10px] py-2">
                                 {product.status === "LIVE" ? "Subscribe" : "Get Early Access"}
                               </GoldButton>
@@ -275,8 +275,8 @@ function StorePage({ setPage }: { setPage: (p: Page) => void }) {
           <div className="relative z-10">
             <Shield size={28} className="text-[#c9a96e] mx-auto mb-3" />
             <h2 className="text-[18px] font-semibold text-[#e8e6e3] mb-2" style={{ fontFamily: "Sora, sans-serif" }}>Need a custom plan?</h2>
-            <p className="text-[13px] text-[#5a5a5a] max-w-md mx-auto mb-4">Enterprise pricing, white-label licensing, custom integrations, dedicated support, SLA guarantees.</p>
-            <a href="https://wa.me/917259426670" target="_blank" rel="noopener noreferrer">
+            <p className="text-[13px] text-[#a8a8a8] max-w-md mx-auto mb-4">Enterprise pricing, white-label licensing, custom integrations, dedicated support, SLA guarantees.</p>
+            <a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer">
               <button className="flex items-center gap-2 mx-auto px-6 py-2.5 text-[12px] font-mono text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/[0.05] transition-colors"><MessageCircle size={13} /> Talk to Sales</button>
             </a>
           </div>

@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 
 export function WhatsAppFAB() {
   return (
-    <motion.a href="https://wa.me/917259426670" target="_blank" rel="noopener noreferrer"
+    <motion.a href="https://wa.me/919901823011" target="_blank" rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-[150] flex items-center justify-center shadow-2xl"
       style={{ borderRadius: "50%", background: "#25D366", width: 52, height: 52 }}
       whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
