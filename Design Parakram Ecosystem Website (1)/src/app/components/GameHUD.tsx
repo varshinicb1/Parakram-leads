@@ -33,8 +33,7 @@ export function GameHUD() {
 
   useEffect(() => {
     if (coins > 0) {
-      animate({
-        targets: "#coin-hud",
+      animate("#coin-hud", {
         scale: [1, 1.3, 1],
         duration: 300,
         easing: "easeOutQuad",

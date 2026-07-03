@@ -170,11 +170,10 @@ export function GoldHunt({ onTreasureFound, className = "" }: { onTreasureFound?
     if (prox === "HOT!" || prox === "BURNING!") {
       const canvas = canvasRef.current;
       if (canvas) {
-        animate({
-          targets: canvas,
+        animate(canvas, {
           translateX: [0, -2, 2, -1, 1, 0],
           duration: 200,
-          ease: "easeOutQuad",
+          easing: "easeOutQuad",
         });
       }
     }
@@ -192,11 +191,10 @@ export function GoldHunt({ onTreasureFound, className = "" }: { onTreasureFound?
         colors: ["#c9a96e", "#f5e4a8", "#10b981", "#22c55e"],
       });
 
-      animate({
-        targets: canvasRef.current,
+      animate(canvasRef.current, {
         scale: [1, 1.03, 1],
         duration: 400,
-        ease: "easeOutQuad",
+        easing: "easeOutQuad",
       });
 
       onTreasureFound?.();

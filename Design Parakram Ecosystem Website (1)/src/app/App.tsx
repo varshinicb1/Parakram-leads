@@ -40,8 +40,7 @@ function AppInner() {
 
   useEffect(() => {
     if (mainRef.current) {
-      animate({
-        targets: mainRef.current,
+      animate(mainRef.current, {
         opacity: [0, 1],
         translateY: [12, 0],
         duration: 400,

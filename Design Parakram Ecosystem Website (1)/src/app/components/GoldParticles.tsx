@@ -30,8 +30,7 @@ export function GoldParticles() {
 
     const anims = particles.map((el) => {
       const xDrift = (Math.random() - 0.5) * 80;
-      return animate({
-        targets: el,
+      return animate(el, {
         translateY: [0, -(window.innerHeight * 0.3 + Math.random() * 200)],
         translateX: [0, xDrift],
         opacity: [
