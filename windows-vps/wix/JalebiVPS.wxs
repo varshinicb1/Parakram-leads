@@ -112,11 +112,27 @@
                   Directory="INSTALLFOLDER"
                   ExeCommand="powershell.exe -NoProfile -ExecutionPolicy Bypass -File deprovision.ps1" />
 
+    <!-- Safety net: RemoveFiles can hit Access Denied on node.exe if the
+         WinSW-wrapped process hasn't fully released its own executable's
+         file handle yet (a short OS-level delay after process exit). When
+         that happens mid-transaction it can leave a partial install
+         directory behind. Retry a full delete a few times, scheduled after
+         RemoveFiles/RemoveFolders so the OS has had time to catch up. Inline
+         command (not a .ps1 component file) so there's nothing for
+         RemoveFiles to have already deleted out from under it. -->
+    <CustomAction Id="FinalCleanup"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="powershell.exe -NoProfile -Command &quot;$d = (Get-Location).Path; for ($i=0; $i -lt 8; $i++) { if (-not (Test-Path $d)) { break }; Get-ChildItem $d -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 750 }; Set-Location $env:TEMP; for ($i=0; $i -lt 10; $i++) { if (-not (Test-Path $d)) { break }; Remove-Item $d -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 500 }&quot;" />
+
     <InstallExecuteSequence>
       <Custom Action="InstallComponents" Sequence="4501" Condition="NOT REMOVE" />
       <Custom Action="ProvisionHost" Sequence="4502" Condition="NOT REMOVE" />
       <Custom Action="DeprovisionHost" Sequence="3450" Condition="REMOVE~=&quot;ALL&quot;" />
       <Custom Action="RemoveComponents" Sequence="3451" Condition="REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="FinalCleanup" Sequence="3601" Condition="REMOVE~=&quot;ALL&quot;" />
     </InstallExecuteSequence>
 
     <!-- ======== FEATURES ======== -->

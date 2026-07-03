@@ -127,8 +127,15 @@ jobs:
             Get-Content $ulog | Select-Object -Last 80
             throw "MSI uninstall failed on clean runner"
           }
-          Start-Sleep -Seconds 3
-          if (Test-Path "C:\Program Files\JalebiVPS") { throw "Install directory was not removed on uninstall" }
+          $installDirGone = $false
+          for ($i = 0; $i -lt 10; $i++) {
+            if (-not (Test-Path "C:\Program Files\JalebiVPS")) { $installDirGone = $true; break }
+            Start-Sleep -Seconds 1
+          }
+          if (-not $installDirGone) {
+            Get-ChildItem "C:\Program Files\JalebiVPS" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName
+            throw "Install directory was not removed on uninstall"
+          }
           if (Get-Service JalebiVPS -ErrorAction SilentlyContinue) { throw "Service still registered after uninstall" }
           Write-Host "✓ Uninstall verified clean"
 

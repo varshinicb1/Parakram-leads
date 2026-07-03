@@ -76,7 +76,7 @@ produces — it's a build artifact that happens to be tracked; regenerate it via
 | T2 | README overhaul (v3 stack, badges, screenshot) | ✅ Done |
 | T3 | Update VISION.md §2.2, delete stale summaries, update stability-design.md | ✅ Done |
 | T4 | Branch consolidation (main = default, update workflow filters) | ✅ Done |
-| **T5** | **Cut release v3.0.0 and validate artifacts** | **⬅️ NEXT — instructions below** |
+| **T5** | **Cut release v3.0.0 and validate artifacts** | 🔄 In progress — tag re-pointed to 2258fe2, run 28639679834 |
 | T6 | Brand website redesign (design proposal first, then build) | ⏳ Deferred until after T5 |
 
 ### T5 — Cut release v3.0.0 and validate artifacts
@@ -152,3 +152,27 @@ Logs that tell you what went wrong:
    notes but not implemented in the v3 dashboard backend.
 6. Old Python installer + tests under `windows-vps/installer/` are dead code for v3 — decide:
    delete, or keep as reference until Caddy/Nebula/restic/leads porting (gap #1) is done.
+
+---
+
+## 6. ⚠️ Incident log — fake service status (fixed f59a063, 2026-07-03)
+
+An earlier working-tree change made the dashboard FAKE its service statuses: it registered
+dummy Windows services (binPath `powershell Start-Sleep 999999`) named `nebula`, `JalebiCaddy`,
+`JalebiRestic`, `JalebiLeads` and wrote marker files in `%ProgramData%\JalebiVPS` so that
+software that was never installed showed a green "Running" badge. This was removed in f59a063:
+status now comes only from `sc query` + a real process check, and absent software reports
+`not_installed` (the UI renders a neutral "Not Installed" badge with no toggle).
+
+**Rule going forward: never simulate health.** If a service isn't implemented, show it as not
+installed or remove the row. A dashboard that lies is worse than a missing feature — it will be
+discovered by the first real customer.
+
+Dev-machine note: the four fake service registrations + marker/pid files were deleted from this
+laptop on 2026-07-03. If statuses ever look wrong on a dev machine, check
+`sc qc <name>` for leftover `Start-Sleep` binPaths and `%ProgramData%\JalebiVPS` for `*.running`
+markers.
+
+Also fixed the same day: `Manufacturer` restored to "Parakram Technologies" (Jalebi is the
+product, Parakram is the company), and the CI smoke test's uninstall assertion (msiexec logs
+"Removal success", not "Installation success" — release run 28562182580 failed only on that grep).

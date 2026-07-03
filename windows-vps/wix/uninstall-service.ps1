@@ -14,10 +14,21 @@ if (Test-Path $svc) {
 }
 Remove-NetFirewallRule -DisplayName "JALEBI VPS Dashboard" -ErrorAction SilentlyContinue
 
-# Clean up WinSW-generated log files (not tracked as MSI components, so
+# Wait for the WinSW-wrapped node.exe process to actually exit before touching
+# its log files — 'svc stop'/'svc uninstall' return before the child process
+# handle is fully released, and deleting a file that's still open silently
+# no-ops on Windows (leaving it behind, which then blocks RemoveFolders).
+for ($i = 0; $i -lt 10; $i++) {
+    $stillRunning = Get-Process -Name node -ErrorAction SilentlyContinue |
+        Where-Object { $_.Path -eq (Join-Path $dir "node.exe") }
+    if (-not $stillRunning) { break }
+    Start-Sleep -Milliseconds 500
+}
+
+# Clean up WinSW-generated log/pid files (not tracked as MSI components, so
 # RemoveFiles/RemoveFolders won't touch them — remove explicitly for a
 # truly clean uninstall with no leftover directory).
-Start-Sleep -Seconds 1
 Get-ChildItem -Path $dir -Filter "JalebiVPS-svc.*.log" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+Get-ChildItem -Path $dir -Filter "*.pid" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
 
 exit 0
