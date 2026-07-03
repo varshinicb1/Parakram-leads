@@ -216,7 +216,7 @@ function StorePage({ setPage }: { setPage: (p: Page) => void }) {
                             </div>
                           </div>
                           <p className="text-[11px] text-[#c9a96e]/50 font-mono mb-2">{product.tagline}</p>
-                          <p className="text-[13px] text-[#6a6a6a] leading-relaxed max-w-2xl">{product.description}</p>
+                          <p className="text-[13px] text-[#a8a8a8] leading-relaxed max-w-2xl">{product.description}</p>
                           <div className="flex flex-wrap gap-2 mt-3">
                             {product.features.map((f) => (
                               <span key={f} className="flex items-center gap-1 text-[10px] font-mono text-[#a8a8a8] border border-white/[0.05] px-2 py-0.5">

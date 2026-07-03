@@ -37,7 +37,7 @@ function ProductsPage({ setPage }: { setPage: (p: Page) => void }) {
                   <h2 className="text-[24px] font-semibold text-[#e8e6e3]" style={{ fontFamily: "Sora, sans-serif" }}>Parakram Edge</h2>
                 </div>
               </div>
-              <p className="text-[14px] text-[#6a6a6a] leading-relaxed mb-6 max-w-2xl">
+              <p className="text-[14px] text-[#a8a8a8] leading-relaxed mb-6 max-w-2xl">
                 A high-performance, localized edge-computing server running natively on Android. Parakram Edge transforms your mobile phone into an asynchronous hardware extension and secure telemetry proxy for desktop AI agents, developers, and remote orchestration workflows.
               </p>
               <p className="text-[13px] text-[#a8a8a8] leading-relaxed mb-6 max-w-2xl">
@@ -90,7 +90,7 @@ function ProductsPage({ setPage }: { setPage: (p: Page) => void }) {
                   <h2 className="text-[24px] font-semibold text-[#e8e6e3]" style={{ fontFamily: "Sora, sans-serif" }}>Parakram Leads</h2>
                 </div>
               </div>
-              <p className="text-[14px] text-[#6a6a6a] leading-relaxed mb-4 max-w-2xl">
+              <p className="text-[14px] text-[#a8a8a8] leading-relaxed mb-4 max-w-2xl">
                 7 out of 10 Indian SMBs have no digital presence. No website. No SSL. No Google Business Profile. They exist on JustDial and Google Maps — invisible, unreachable, losing customers daily. Parakram Leads finds them, scores their gaps, and lets you sell them the solution automatically.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-6">
@@ -152,7 +152,7 @@ function ProductsPage({ setPage }: { setPage: (p: Page) => void }) {
                   <h2 className="text-[24px] font-semibold text-[#e8e6e3]" style={{ fontFamily: "Sora, sans-serif" }}>Parakram Research</h2>
                 </div>
               </div>
-              <p className="text-[14px] text-[#6a6a6a] leading-relaxed mb-6 max-w-2xl">
+              <p className="text-[14px] text-[#a8a8a8] leading-relaxed mb-6 max-w-2xl">
                 A tool for academic and professional research automation. Parakram Research scrapes hundreds of papers from arXiv, PubMed, Semantic Scholar, and other sources, builds a structured searchable database, and uses AI to extract summaries, identify trends, compare findings, and generate literature review drafts.
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
