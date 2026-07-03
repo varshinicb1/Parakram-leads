@@ -123,7 +123,7 @@ jobs:
 
           $ulog = "$env:RUNNER_TEMP\uninstall.log"
           Start-Process msiexec.exe -ArgumentList "/x", "`"$($msi.FullName)`"", "/qn", "/l*v", "`"$ulog`"" -Wait
-          if (-not (Select-String -Path $ulog -Pattern "Installation success" -Quiet)) {
+          if (-not (Select-String -Path $ulog -Pattern "Removal success|Installation success" -Quiet)) {
             Get-Content $ulog | Select-Object -Last 80
             throw "MSI uninstall failed on clean runner"
           }
