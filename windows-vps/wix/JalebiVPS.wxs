@@ -117,15 +117,37 @@
          file handle yet (a short OS-level delay after process exit). When
          that happens mid-transaction it can leave a partial install
          directory behind. Retry a full delete a few times, scheduled after
-         RemoveFiles/RemoveFolders so the OS has had time to catch up. Inline
-         command (not a .ps1 component file) so there's nothing for
-         RemoveFiles to have already deleted out from under it. -->
+         RemoveFiles/RemoveFolders so the OS has had time to catch up.
+         Uses -EncodedCommand (base64 of the UTF-16LE script below) instead
+         of an inline quoted string: a previous version used nested double
+         quotes inside the MSI-XML-escaped ExeCommand attribute, which is
+         exactly the kind of quoting a Windows Installer deferred custom
+         action can silently mis-parse — on a GitHub Actions runner this
+         caused powershell.exe to sit waiting instead of running, hanging
+         the entire uninstall for 20+ minutes with zero log output until CI
+         force-cancelled it. -EncodedCommand sidesteps all of that: the
+         payload is plain base64, nothing for XML or shell quoting to
+         mangle. Source (for the next time this needs changing):
+
+           $d = (Get-Location).Path
+           for ($i=0; $i -lt 8; $i++) {
+               if (-not (Test-Path $d)) { break }
+               Get-ChildItem $d -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+               Start-Sleep -Milliseconds 750
+           }
+           Set-Location $env:TEMP
+           for ($i=0; $i -lt 10; $i++) {
+               if (-not (Test-Path $d)) { break }
+               Remove-Item $d -Force -ErrorAction SilentlyContinue
+               Start-Sleep -Milliseconds 500
+           }
+    -->
     <CustomAction Id="FinalCleanup"
                   Execute="deferred"
                   Impersonate="no"
                   Return="ignore"
                   Directory="INSTALLFOLDER"
-                  ExeCommand="powershell.exe -NoProfile -Command &quot;$d = (Get-Location).Path; for ($i=0; $i -lt 8; $i++) { if (-not (Test-Path $d)) { break }; Get-ChildItem $d -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 750 }; Set-Location $env:TEMP; for ($i=0; $i -lt 10; $i++) { if (-not (Test-Path $d)) { break }; Remove-Item $d -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 500 }&quot;" />
+                  ExeCommand="powershell.exe -NoProfile -NonInteractive -EncodedCommand JABkACAAPQAgACgARwBlAHQALQBMAG8AYwBhAHQAaQBvAG4AKQAuAFAAYQB0AGgACgBmAG8AcgAgACgAJABpAD0AMAA7ACAAJABpACAALQBsAHQAIAA4ADsAIAAkAGkAKwArACkAIAB7AAoAIAAgACAAIABpAGYAIAAoAC0AbgBvAHQAIAAoAFQAZQBzAHQALQBQAGEAdABoACAAJABkACkAKQAgAHsAIABiAHIAZQBhAGsAIAB9AAoAIAAgACAAIABHAGUAdAAtAEMAaABpAGwAZABJAHQAZQBtACAAJABkACAALQBGAG8AcgBjAGUAIAAtAEUAcgByAG8AcgBBAGMAdABpAG8AbgAgAFMAaQBsAGUAbgB0AGwAeQBDAG8AbgB0AGkAbgB1AGUAIAB8ACAAUgBlAG0AbwB2AGUALQBJAHQAZQBtACAALQBSAGUAYwB1AHIAcwBlACAALQBGAG8AcgBjAGUAIAAtAEUAcgByAG8AcgBBAGMAdABpAG8AbgAgAFMAaQBsAGUAbgB0AGwAeQBDAG8AbgB0AGkAbgB1AGUACgAgACAAIAAgAFMAdABhAHIAdAAtAFMAbABlAGUAcAAgAC0ATQBpAGwAbABpAHMAZQBjAG8AbgBkAHMAIAA3ADUAMAAKAH0ACgBTAGUAdAAtAEwAbwBjAGEAdABpAG8AbgAgACQAZQBuAHYAOgBUAEUATQBQAAoAZgBvAHIAIAAoACQAaQA9ADAAOwAgACQAaQAgAC0AbAB0ACAAMQAwADsAIAAkAGkAKwArACkAIAB7AAoAIAAgACAAIABpAGYAIAAoAC0AbgBvAHQAIAAoAFQAZQBzAHQALQBQAGEAdABoACAAJABkACkAKQAgAHsAIABiAHIAZQBhAGsAIAB9AAoAIAAgACAAIABSAGUAbQBvAHYAZQAtAEkAdABlAG0AIAAkAGQAIAAtAEYAbwByAGMAZQAgAC0ARQByAHIAbwByAEEAYwB0AGkAbwBuACAAUwBpAGwAZQBuAHQAbAB5AEMAbwBuAHQAaQBuAHUAZQAKACAAIAAgACAAUwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBNAGkAbABsAGkAcwBlAGMAbwBuAGQAcwAgADUAMAAwAAoAfQA=" />
 
     <InstallExecuteSequence>
       <Custom Action="InstallComponents" Sequence="4501" Condition="NOT REMOVE" />
