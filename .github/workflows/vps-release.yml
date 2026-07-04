@@ -135,16 +135,23 @@ jobs:
           # a fully-empty top-level folder behind for a few seconds after the
           # uninstall returns. That's a cosmetic leftover, not a real leak —
           # fail only if actual files remain, not on an empty directory.
-          $realFilesLeft = $false
-          for ($i = 0; $i -lt 15; $i++) {
-            $remaining = Get-ChildItem "C:\Program Files\JalebiVPS" -Recurse -File -ErrorAction SilentlyContinue
-            if (-not $remaining) { $realFilesLeft = $false; break }
-            $realFilesLeft = $true
+          # Force+array-cast to catch hidden/system files and avoid any
+          # ambiguity from a bare pipeline result; re-check immediately before
+          # throwing (not relying on stale loop state) to avoid a race between
+          # detection and the diagnostic dump below.
+          $filesRemain = $true
+          for ($i = 0; $i -lt 20; $i++) {
+            $remaining = @(Get-ChildItem "C:\Program Files\JalebiVPS" -Recurse -File -Force -ErrorAction SilentlyContinue)
+            if ($remaining.Count -eq 0) { $filesRemain = $false; break }
             Start-Sleep -Seconds 1
           }
-          if ($realFilesLeft) {
-            Get-ChildItem "C:\Program Files\JalebiVPS" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName
-            throw "Real files were left behind after uninstall (not just an empty directory)"
+          if ($filesRemain) {
+            $finalCheck = @(Get-ChildItem "C:\Program Files\JalebiVPS" -Recurse -Force -ErrorAction SilentlyContinue)
+            if ($finalCheck.Count -gt 0) {
+              Write-Host "Files/dirs still present:"
+              $finalCheck | ForEach-Object { Write-Host " - $($_.FullName) ($($_.Length) bytes)" }
+              throw "Real files were left behind after uninstall (not just an empty directory)"
+            }
           }
           if (Test-Path "C:\Program Files\JalebiVPS") {
             Write-Host "⚠ Empty install directory persisted after uninstall (known cosmetic race, see README) — not failing the build"
