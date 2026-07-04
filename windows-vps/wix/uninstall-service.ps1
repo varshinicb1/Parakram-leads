@@ -12,6 +12,19 @@ if (Test-Path $svc) {
     Start-Sleep -Seconds 2
     sc.exe delete JalebiVPS 2>&1 | Out-Null
 }
+
+# WinSW's own "uninstall" can leave the service in a "marked for deletion"
+# state that Get-Service/sc query still reports until every handle to it
+# closes — observed on CI persisting well past 15s. Force a definitive
+# `sc.exe delete` as a fallback regardless of which path above ran, and poll
+# briefly for the SCM entry to actually disappear.
+for ($i = 0; $i -lt 10; $i++) {
+    $stillRegistered = Get-Service JalebiVPS -ErrorAction SilentlyContinue
+    if (-not $stillRegistered) { break }
+    sc.exe delete JalebiVPS 2>&1 | Out-Null
+    Start-Sleep -Seconds 1
+}
+
 Remove-NetFirewallRule -DisplayName "JALEBI VPS Dashboard" -ErrorAction SilentlyContinue
 
 # Wait for the WinSW-wrapped node.exe process to actually exit before touching
