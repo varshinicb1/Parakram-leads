@@ -12,6 +12,12 @@ Turn any Windows laptop into a production-ready VPS with one click.
 
 ![VPS Dashboard](docs/screenshots/vps-dashboard.png)
 
+**🍥 Landing page:** [jalebi-vps.web.app](https://jalebi-vps.web.app) — a 3D landing page (Three.js) with a
+procedurally-generated jalebi coil, "why the name" explainer, and a download button. Source in
+[`jalebi-landing/`](jalebi-landing/), deployed via `firebase deploy`.
+
+![Jalebi VPS landing page](docs/screenshots/jalebi-landing.png)
+
 ## Overview
 
 JALEBI VPS transforms Windows machines into secure, accessible virtual servers using:
