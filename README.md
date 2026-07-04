@@ -39,6 +39,10 @@ JALEBI VPS transforms Windows machines into secure, accessible virtual servers u
 
 ## Quick Start
 
+> **v3.0.0 is live** — [download](https://github.com/varshinicb1/Parakram-leads/releases/tag/v3.0.0) ·
+> code-signed MSI, verified via `gh release download` + SHA256 checksum match against `SHA256SUMS.txt`
+> + a real install → dashboard check → uninstall cycle on a clean CI runner before this note was written.
+
 1. Download `JalebiVPS-v3.0.0.msi` from the [releases page](https://github.com/varshinicb1/Parakram-leads/releases)
 2. Run the MSI as Administrator
 3. The installer provisions:
@@ -98,8 +102,7 @@ or payment flow in the MSI today. Table above is the target pricing, not a live 
 4. **Windows OpenSSH capability** requires Windows Update connectivity on machines where it isn't cached
 5. **Auto-update** is a placeholder — `/a/update-check` always returns `{available: false}`
 6. **No installer wizard, account creation, or Google Sign-In flow in the MSI/dashboard** — install is silent; auth exists server-side for the Leads product only
-7. **No release has been published yet.** CI (`vps-release.yml`) builds, signs, and smoke-tests the MSI on every `v*` tag, but the first clean run through the full pipeline is still in progress — check the [Actions tab](https://github.com/varshinicb1/Parakram-leads/actions/workflows/vps-release.yml) or [Releases page](https://github.com/varshinicb1/Parakram-leads/releases) for current status before assuming a download is available
-8. **Uninstall can leave WinSW's own diagnostic log files behind** (`JalebiVPS-svc.err.log` / `.out.log`, a few hundred bytes, no application data) and occasionally the empty top-level folder itself, confirmed on CI: WinSW doesn't always release its own log file handle within 20 seconds of `svc stop`/`svc uninstall` reporting done. All real application files, the service, and firewall rules are removed regardless. Safe to delete `C:\Program Files\JalebiVPS` manually if you see it left over
+7. **Uninstall can leave WinSW's own diagnostic log files behind** (`JalebiVPS-svc.err.log` / `.out.log`, a few hundred bytes, no application data) and occasionally the empty top-level folder itself — WinSW doesn't always release its own log file handle or fully exit its host process immediately after `svc stop`/`svc uninstall` reports done. All real application files, the service registration, and firewall rules are removed regardless (verified via CI diagnostics). Safe to delete `C:\Program Files\JalebiVPS` manually if you see it left over
 
 ## Development
 
