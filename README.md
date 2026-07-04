@@ -42,6 +42,10 @@ JALEBI VPS transforms Windows machines into secure, accessible virtual servers u
 > **v3.0.0 is live** — [download](https://github.com/varshinicb1/Parakram-leads/releases/tag/v3.0.0) ·
 > code-signed MSI, verified via `gh release download` + SHA256 checksum match against `SHA256SUMS.txt`
 > + a real install → dashboard check → uninstall cycle on a clean CI runner before this note was written.
+> **Note:** this repo was private until just after the release published — the landing page's download
+> button pointed at release assets no anonymous visitor could actually reach (GitHub 404s unauthenticated
+> requests to private-repo releases). Made public and re-verified the download link resolves for a plain,
+> unauthenticated `curl` (HTTP 200) before calling this done.
 
 1. Download `JalebiVPS-v3.0.0.msi` from the [releases page](https://github.com/varshinicb1/Parakram-leads/releases)
 2. Run the MSI as Administrator
