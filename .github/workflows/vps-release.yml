@@ -163,7 +163,16 @@ jobs:
           if (Test-Path "C:\Program Files\JalebiVPS") {
             Write-Host "⚠ Install directory persisted after uninstall (empty, or only WinSW log files — known cosmetic race, see README) — not failing the build"
           }
-          if (Get-Service JalebiVPS -ErrorAction SilentlyContinue) { throw "Service still registered after uninstall" }
+          # A Windows service marked for deletion (sc delete / WinSW uninstall)
+          # can remain visible to Get-Service / sc query until every open
+          # handle to it closes — this is normal SCM behavior, not a leak.
+          # Poll briefly instead of failing on the first check.
+          $serviceGone = $false
+          for ($i = 0; $i -lt 15; $i++) {
+            if (-not (Get-Service JalebiVPS -ErrorAction SilentlyContinue)) { $serviceGone = $true; break }
+            Start-Sleep -Seconds 1
+          }
+          if (-not $serviceGone) { throw "Service still registered after uninstall" }
           Write-Host "✓ Uninstall verified clean"
 
       - name: Upload Windows MSI
