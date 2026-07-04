@@ -172,7 +172,15 @@ jobs:
             if (-not (Get-Service JalebiVPS -ErrorAction SilentlyContinue)) { $serviceGone = $true; break }
             Start-Sleep -Seconds 1
           }
-          if (-not $serviceGone) { throw "Service still registered after uninstall" }
+          if (-not $serviceGone) {
+            Write-Host "--- diagnostic: sc.exe query JalebiVPS ---"
+            sc.exe query JalebiVPS 2>&1 | Write-Host
+            Write-Host "--- diagnostic: sc.exe qc JalebiVPS ---"
+            sc.exe qc JalebiVPS 2>&1 | Write-Host
+            Write-Host "--- diagnostic: uninstall-service.log ---"
+            Get-Content "$env:ProgramData\JalebiVPS\uninstall-service.log" -ErrorAction SilentlyContinue | Write-Host
+            throw "Service still registered after uninstall"
+          }
           Write-Host "✓ Uninstall verified clean"
 
       - name: Upload Windows MSI
