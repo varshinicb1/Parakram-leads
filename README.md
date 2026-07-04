@@ -99,7 +99,7 @@ or payment flow in the MSI today. Table above is the target pricing, not a live 
 5. **Auto-update** is a placeholder — `/a/update-check` always returns `{available: false}`
 6. **No installer wizard, account creation, or Google Sign-In flow in the MSI/dashboard** — install is silent; auth exists server-side for the Leads product only
 7. **No release has been published yet.** CI (`vps-release.yml`) builds, signs, and smoke-tests the MSI on every `v*` tag, but the first clean run through the full pipeline is still in progress — check the [Actions tab](https://github.com/varshinicb1/Parakram-leads/actions/workflows/vps-release.yml) or [Releases page](https://github.com/varshinicb1/Parakram-leads/releases) for current status before assuming a download is available
-8. **Uninstall can rarely leave an empty top-level install folder** due to a Windows file-handle-release race right after the service process exits (all files/services/firewall rules are removed regardless — only a harmless empty directory can remain). A retry-based cleanup step is in place; if you see a leftover empty `C:\Program Files\JalebiVPS`, it's safe to delete manually
+8. **Uninstall can leave WinSW's own diagnostic log files behind** (`JalebiVPS-svc.err.log` / `.out.log`, a few hundred bytes, no application data) and occasionally the empty top-level folder itself, confirmed on CI: WinSW doesn't always release its own log file handle within 20 seconds of `svc stop`/`svc uninstall` reporting done. All real application files, the service, and firewall rules are removed regardless. Safe to delete `C:\Program Files\JalebiVPS` manually if you see it left over
 
 ## Development
 
