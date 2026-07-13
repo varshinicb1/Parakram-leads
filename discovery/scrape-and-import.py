@@ -16,41 +16,44 @@ CATEGORIES = [
 ]
 
 async def main():
-    city = os.environ.get("CITY", "Bangalore")
+    city_str = os.environ.get("CITY", "Bangalore")
     limit = int(os.environ.get("LIMIT", "15"))
+    cities = [c.strip() for c in city_str.split(",") if c.strip()]
 
     all_results = []
     seen = set()
 
-    for cat in CATEGORIES:
-        try:
-            url = f"https://www.google.com/maps/search/{cat}+in+{city.replace(' ', '+')}"
-            config = ScrapeConfig(concurrency=3, headless=True, max_results=limit)
-            results = await scrape_batch([url], config)
-            count = 0
-            for r in results:
-                if r.success and r.place and r.place.name:
-                    p = r.place
-                    name = p.name.split(" | ")[0].strip()[:80]
-                    phone = re.sub(r"[^\d+]", "", (p.phone or "").replace("\ue0b0", ""))
-                    if phone and phone in seen:
-                        continue
-                    if phone:
-                        seen.add(phone)
-                    all_results.append({
-                        "name": name,
-                        "phone": phone,
-                        "website": p.website or None,
-                        "address": (p.address or "").replace("\ue0c8", "").strip(),
-                        "category": (p.category or "").strip() or None,
-                        "rating": p.rating,
-                        "reviews": p.review_count,
-                        "city": city,
-                    })
-                    count += 1
-            print(f"  {cat}: {count} unique")
-        except Exception as e:
-            print(f"  {cat} FAILED: {e}")
+    for city in cities:
+        print(f"\n=== Scraping {city} ===")
+        for cat in CATEGORIES:
+            try:
+                url = f"https://www.google.com/maps/search/{cat}+in+{city.replace(' ', '+')}"
+                config = ScrapeConfig(concurrency=2, headless=True, timeout=60000)
+                results = await scrape_batch([url], config)
+                count = 0
+                for r in results:
+                    if r.success and r.place and r.place.name:
+                        p = r.place
+                        name = p.name.split(" | ")[0].strip()[:80]
+                        phone = re.sub(r"[^\d+]", "", (p.phone or "").replace("\ue0b0", ""))
+                        if phone and phone in seen:
+                            continue
+                        if phone:
+                            seen.add(phone)
+                        all_results.append({
+                            "name": name,
+                            "phone": phone,
+                            "website": p.website or None,
+                            "address": (p.address or "").replace("\ue0c8", "").strip(),
+                            "category": (p.category or "").strip() or None,
+                            "rating": p.rating,
+                            "reviews": p.review_count,
+                            "city": city,
+                        })
+                        count += 1
+                print(f"  {cat}: {count} unique")
+            except Exception as e:
+                print(f"  {cat} FAILED: {e}")
 
     no_web = [r for r in all_results if not r.get("website")]
     print(f"\nTotal: {len(all_results)}, No website: {len(no_web)}")
