@@ -1,0 +1,135 @@
+name: Discover Leads (Google Maps Scraper)
+
+on:
+  workflow_dispatch:
+    inputs:
+      city:
+        description: City to scrape
+        required: true
+        default: Bangalore
+      limit:
+        description: Max leads per query
+        required: false
+        default: '20'
+      categories:
+        description: Comma-separated categories (default: small local businesses)
+        required: false
+        default: ''
+      no_website_only:
+        description: Only import leads without websites (true/false)
+        required: false
+        default: 'false'
+  schedule:
+    - cron: '0 6 * * 1'
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Python deps + Playwright
+        run: |
+          pip install google-maps-scraper playwright 2>/dev/null || true
+          python3 -m playwright install chromium 2>/dev/null || true
+
+      - name: Scrape Google Maps
+        env:
+          CITY: ${{ github.event.inputs.city || 'Bangalore' }}
+          LIMIT: ${{ github.event.inputs.limit || '20' }}
+          CATEGORIES: ${{ github.event.inputs.categories || '' }}
+        run: |
+          python3 -c "
+import asyncio, sys, json, re, os
+from gmaps_scraper import scrape_batch, ScrapeConfig
+
+city = os.environ.get('CITY', 'Bangalore')
+limit = int(os.environ.get('LIMIT', '20'))
+cat_input = os.environ.get('CATEGORIES', '')
+
+DEFAULT_CATEGORIES = [
+    'restaurants', 'salons', 'clinics', 'gyms', 'pharmacies',
+    'beauty parlors', 'bakeries', 'tailors', 'laundromats',
+    'kirana stores', 'general stores', 'stationery shops',
+    'electronic repair', 'mobile repair', 'car repair',
+    'auto repair', 'plumbers', 'electricians', 'carpenters',
+    'packers movers', 'tution classes', 'coaching centers',
+    'cafes', 'fast food', 'dental clinics', 'optical stores',
+    'hardware stores', 'painting contractors',
+]
+
+categories = [c.strip() for c in cat_input.split(',') if c.strip()] if cat_input else DEFAULT_CATEGORIES
+all_results = []
+seen = set()
+
+for cat in categories:
+    try:
+        url = f'https://www.google.com/maps/search/{cat}+in+{city.replace(\" \", \"+\")}'
+        config = ScrapeConfig(concurrency=3, headless=True, max_results=limit)
+        results = asyncio.run(scrape_batch([url], config))
+        count = 0
+        for r in results:
+            if r.success and r.place and r.place.name:
+                p = r.place
+                name = p.name.split(' | ')[0].strip()[:80]
+                phone = re.sub(r'[^\d+]', '', (p.phone or '').replace('\ue0b0', ''))
+                if phone and phone in seen: continue
+                if phone: seen.add(phone)
+                website = p.website or None
+                all_results.append({
+                    'name': name,
+                    'phone': phone,
+                    'website': website,
+                    'address': (p.address or '').replace('\ue0c8', '').strip(),
+                    'category': (p.category or '').strip() or None,
+                    'rating': p.rating,
+                    'reviews': p.review_count,
+                    'city': city,
+                })
+                count += 1
+        sys.stderr.write(f'  {cat}: {count} unique results\n')
+    except Exception as e:
+        sys.stderr.write(f'  {cat} failed: {e}\n')
+
+with open('scrape-output.json', 'w') as f:
+    json.dump(all_results, f, indent=2)
+
+no_web = [r for r in all_results if not r.get('website')]
+has_web = [r for r in all_results if r.get('website')]
+print(f'Scraped {len(all_results)} unique leads ({len(no_web)} no website, {len(has_web)} have website)')
+" 2>&1
+
+      - name: Filter no-website leads (if requested)
+        if: ${{ github.event.inputs.no_website_only == 'true' }}
+        run: |
+          python3 -c "
+import json
+with open('scrape-output.json') as f:
+    data = json.load(f)
+filtered = [r for r in data if not r.get('website')]
+with open('scrape-output.json', 'w') as f:
+    json.dump(filtered, f)
+print(f'Filtered to {len(filtered)} no-website leads')
+"
+
+      - name: Import leads into Wintermute
+        env:
+          API_EMAIL: ${{ secrets.DISCOVERY_EMAIL }}
+          API_PASSWORD: ${{ secrets.DISCOVERY_PASSWORD }}
+        run: cat scrape-output.json | node discovery/adapter.mjs
+
+      - name: Print summary stats
+        run: |
+          python3 -c "
+import json
+with open('scrape-output.json') as f:
+    data = json.load(f)
+no_web = [r for r in data if not r.get('website')]
+has_web = [r for r in data if r.get('website')]
+cats = {}
+for r in data:
+    c = r.get('category','Unknown')
+    cats[c] = cats.get(c,0)+1
+print(f'Total: {len(data)} | No website: {len(no_web)} | Has website: {len(has_web)}')
+print(f'Categories: {json.dumps(cats, indent=2)}')
+"
