@@ -1,4 +1,4 @@
-name: Scrape & Import Leads
+name: Scrape and Import Leads
 
 on:
   workflow_dispatch:
