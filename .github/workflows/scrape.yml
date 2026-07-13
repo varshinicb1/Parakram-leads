@@ -13,7 +13,7 @@ jobs:
       - name: Install deps
         run: |
           pip install google-maps-scraper playwright
-          python3 -m playwright install chromium
+          python3 -m playwright install chromium firefox
 
       - name: Scrape and import
         env:
