@@ -1,4 +1,4 @@
-name: Discover Leads (Google Maps Scraper)
+name: Scrape & Import Leads
 
 on:
   workflow_dispatch:
@@ -12,15 +12,13 @@ on:
         required: false
         default: '20'
       categories:
-        description: Comma-separated categories (default: small local businesses)
+        description: Comma-separated list (default: 27 local business types)
         required: false
         default: ''
       no_website_only:
         description: Only import leads without websites (true/false)
         required: false
         default: 'false'
-  schedule:
-    - cron: '0 6 * * 1'
 
 jobs:
   discover:
@@ -28,26 +26,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Python deps + Playwright
+      - name: Install deps
         run: |
-          pip install google-maps-scraper playwright 2>/dev/null || true
-          python3 -m playwright install chromium 2>/dev/null || true
+          pip install google-maps-scraper playwright
+          python3 -m playwright install chromium
 
       - name: Scrape Google Maps
+        id: scrape
         env:
-          CITY: ${{ github.event.inputs.city || 'Bangalore' }}
-          LIMIT: ${{ github.event.inputs.limit || '20' }}
-          CATEGORIES: ${{ github.event.inputs.categories || '' }}
+          CITY: ${{ inputs.city }}
+          LIMIT: ${{ inputs.limit }}
+          CATEGORIES: ${{ inputs.categories }}
         run: |
-          python3 -c "
+          python3 << 'PYEOF'
 import asyncio, sys, json, re, os
 from gmaps_scraper import scrape_batch, ScrapeConfig
 
 city = os.environ.get('CITY', 'Bangalore')
-limit = int(os.environ.get('LIMIT', '20'))
+limit = int(os.environ.get('LIMIT', 20))
 cat_input = os.environ.get('CATEGORIES', '')
 
-DEFAULT_CATEGORIES = [
+DEFAULT = [
     'restaurants', 'salons', 'clinics', 'gyms', 'pharmacies',
     'beauty parlors', 'bakeries', 'tailors', 'laundromats',
     'kirana stores', 'general stores', 'stationery shops',
@@ -58,13 +57,13 @@ DEFAULT_CATEGORIES = [
     'hardware stores', 'painting contractors',
 ]
 
-categories = [c.strip() for c in cat_input.split(',') if c.strip()] if cat_input else DEFAULT_CATEGORIES
+categories = [c.strip() for c in cat_input.split(',') if c.strip()] if cat_input else DEFAULT
 all_results = []
 seen = set()
 
 for cat in categories:
     try:
-        url = f'https://www.google.com/maps/search/{cat}+in+{city.replace(\" \", \"+\")}'
+        url = f'https://www.google.com/maps/search/{cat}+in+{city.replace(" ", "+")}'
         config = ScrapeConfig(concurrency=3, headless=True, max_results=limit)
         results = asyncio.run(scrape_batch([url], config))
         count = 0
@@ -87,22 +86,22 @@ for cat in categories:
                     'city': city,
                 })
                 count += 1
-        sys.stderr.write(f'  {cat}: {count} unique results\n')
+        print(f'  {cat}: {count} unique')
     except Exception as e:
-        sys.stderr.write(f'  {cat} failed: {e}\n')
+        print(f'  {cat} FAILED: {e}')
 
 with open('scrape-output.json', 'w') as f:
     json.dump(all_results, f, indent=2)
 
 no_web = [r for r in all_results if not r.get('website')]
 has_web = [r for r in all_results if r.get('website')]
-print(f'Scraped {len(all_results)} unique leads ({len(no_web)} no website, {len(has_web)} have website)')
-" 2>&1
+print(f'DONE: {len(all_results)} leads ({len(no_web)} no website, {len(has_web)} have website)')
+PYEOF
 
-      - name: Filter no-website leads (if requested)
-        if: ${{ github.event.inputs.no_website_only == 'true' }}
+      - name: Filter no-website leads
+        if: inputs.no_website_only == 'true'
         run: |
-          python3 -c "
+          python3 << 'PYEOF'
 import json
 with open('scrape-output.json') as f:
     data = json.load(f)
@@ -110,17 +109,17 @@ filtered = [r for r in data if not r.get('website')]
 with open('scrape-output.json', 'w') as f:
     json.dump(filtered, f)
 print(f'Filtered to {len(filtered)} no-website leads')
-"
+PYEOF
 
-      - name: Import leads into Wintermute
+      - name: Import into Wintermute
         env:
           API_EMAIL: ${{ secrets.DISCOVERY_EMAIL }}
           API_PASSWORD: ${{ secrets.DISCOVERY_PASSWORD }}
         run: cat scrape-output.json | node discovery/adapter.mjs
 
-      - name: Print summary stats
+      - name: Summary
         run: |
-          python3 -c "
+          python3 << 'PYEOF'
 import json
 with open('scrape-output.json') as f:
     data = json.load(f)
@@ -128,8 +127,8 @@ no_web = [r for r in data if not r.get('website')]
 has_web = [r for r in data if r.get('website')]
 cats = {}
 for r in data:
-    c = r.get('category','Unknown')
-    cats[c] = cats.get(c,0)+1
+    c = r.get('category', 'Unknown')
+    cats[c] = cats.get(c, 0) + 1
 print(f'Total: {len(data)} | No website: {len(no_web)} | Has website: {len(has_web)}')
 print(f'Categories: {json.dumps(cats, indent=2)}')
-"
+PYEOF

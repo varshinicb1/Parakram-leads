@@ -1,0 +1,32 @@
+﻿[
+  {
+    "name": "Le Plaisir",
+    "phone": "08550995835",
+    "website": null,
+    "address": "Rajkamal Survey No. 759/125, Prabhat Road, Opposite Cox and Kings, Near, Kelkar Nursing Home, Pune, Maharashtra 411004",
+    "category": "European restaurant",
+    "rating": 4.4,
+    "reviews": 11639,
+    "city": "Pune"
+  },
+  {
+    "name": "Athaayu Uro Care Pune",
+    "phone": "07888249000",
+    "website": "https://www.athaayuurocare.com/",
+    "address": "3rd floor, RKL Business Centre, Kokane Chowk, Pimple Saudagar, Pimpri-Chinchwad, Maharashtra 411027",
+    "category": "Hospital",
+    "rating": 5.0,
+    "reviews": 156,
+    "city": "Pune"
+  },
+  {
+    "name": "Annpoornam",
+    "phone": "01413163935",
+    "website": "https://annpoornam.com/",
+    "address": "Ground Floor, Moondra Tower, Plot No 012A, Ashok Marg, near Ahinsa Circle, Patrakar Colony, C Scheme, Ashok Nagar, Jaipur, Rajasthan 302001",
+    "category": "South Indian restaurant",
+    "rating": 4.5,
+    "reviews": 1615,
+    "city": "Jaipur"
+  }
+]

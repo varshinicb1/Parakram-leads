@@ -1,0 +1,73 @@
+﻿python : Still on search results page after click.
+At line:1 char:117
++ ... tput.json"; python "C:\Users\varsh\OneDrive\Documents\Sigma solutions ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Still on search...ge after click.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Still on search results page after click.
+Still on search results page after click.
+Could not navigate to a place panel after retries. Proceeding anyway.
+  "restaurants in Indore": 1 results
+Still on search results page after click.
+Still on search results page after click.
+Still on search results page after click.
+Could not navigate to a place panel after retries. Proceeding anyway.
+Parsed name 'Results' is a search page title, not a real place. Marking as failed for URL: 
+https://www.google.com/maps/search/salons+in+Indore
+  "salons in Indore": 0 results
+Still on search results page after click.
+Still on search results page after click.
+Still on search results page after click.
+Could not navigate to a place panel after retries. Proceeding anyway.
+  "gyms in Indore": 1 results
+Still on search results page after click.
+Still on search results page after click.
+Still on search results page after click.
+Could not navigate to a place panel after retries. Proceeding anyway.
+  "clinics in Indore": 1 results
+Still on search results page after click.
+Still on search results page after click.
+Still on search results page after click.
+Could not navigate to a place panel after retries. Proceeding anyway.
+  "schools in Indore": 1 results
+
+Total unique leads scraped: 4
+[
+  {
+    "name": "FLAME BY FIRE & SMOKE",
+    "phone": "091111 05423",
+    "website": null,
+    "address": "\ue0c8 Roof Top , Hotel Alba Premier Opp C21 Mall, AB Rd, Near Pakiza, Indore, Madhya Pradesh 452010",
+    "category": "Restaurant",
+    "rating": 4.7,
+    "reviews": 3190
+  },
+  {
+    "name": "GYM @ 365 DAYS",
+    "phone": "095223 65365",
+    "website": null,
+    "address": "\ue0c8 10-A Narmada Nagar, Annapurna Rd, above SBI Bank, near Chanakyapuri, Chouraha, Indore, Madhya Pradesh 452009",
+    "category": "Gym",
+    "rating": 4.8,
+    "reviews": 552
+  },
+  {
+    "name": "Apollo Clinic bhanwarkua indore",
+    "phone": "0731 487 0736",
+    "website": null,
+    "address": "\ue0c8 No-1, Scheme No - 44-B, Siddharth Nagar, Bhanwarkua Square, AB Rd, Indore, Madhya Pradesh 452014",
+    "category": "Medical clinic",
+    "rating": 4.7,
+    "reviews": 1085
+  },
+  {
+    "name": "Podar International School (CBSE) Indore - Vijaynagar",
+    "phone": "063664 37967",
+    "website": "http://www.podareducation.org/school/indore/?utm_source=gmb&utm_medium=organic&utm_campaign=gmb_indore_cbse",
+    "address": "\ue0c8 Satya Sai Circle, Scheme No.74, A.B.Road, behind Shri Panchmukhi Hanuman Mandir, Indore, Madhya Pradesh 452010",
+    "category": "Education center",
+    "rating": 4.2,
+    "reviews": 318
+  }
+]

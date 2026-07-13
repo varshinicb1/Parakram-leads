@@ -1,0 +1,22 @@
+{
+  "name": "wintermute-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:frontend": "cd ../frontend && npm run build && npx wrangler pages deploy out --project-name wintermute"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cf-workers-og": "^3.0.1",
+    "hono": "^4.7.0",
+    "jose": "^5.9.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260708.1",
+    "@types/bcryptjs": "^2.4.6",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  }
+}
